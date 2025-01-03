@@ -8,5 +8,5 @@ from adapter.AwsSecretManagerRotationEvent import AwsSecretManagerRotationEvent
 def lambda_handler(event: AwsSecretManagerRotationEvent, context: LambdaContext) -> None:
     print(event)
     print(context)
-    
+
     return event
