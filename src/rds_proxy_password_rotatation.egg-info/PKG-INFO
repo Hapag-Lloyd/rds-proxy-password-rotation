@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: rds-proxy-password-rotatation
+Version: 1.0.0
+Summary: A program to rotate the password of an RDS database accessed via a RDS proxy
+Home-page: https://github.com/Hapag-Lloyd/rds-proxy-password-rotation
+Author: Hapag-Lloyd AG
+Author-email: info@hlag.com
+Project-URL: Bug Tracker, https://github.com/Hapag-Lloyd/rds-proxy-password-rotation/issues
+Project-URL: repository, https://github.com/Hapag-Lloyd/rds-proxy-password-rotation
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: aws-lambda-powertools==3.4.0
+Requires-Dist: pydantic==2.10.4
+Provides-Extra: test
+Requires-Dist: pytest==8.3.4; extra == "test"
+Requires-Dist: pytest-cov==6.0.0; extra == "test"
+
+# rds-proxy-password-rotation
+Python script to rotate the RDS credentials using a separate credential for the application.
