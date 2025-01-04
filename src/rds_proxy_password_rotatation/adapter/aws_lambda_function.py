@@ -48,4 +48,4 @@ def lambda_handler(event: AwsSecretManagerRotationEvent, context: LambdaContext)
 
 @inject
 def __call_application(event: AwsSecretManagerRotationEvent, application: PasswordRotationApplication = Provide[Container.password_rotation_application]) -> None:
-    application.rotate_secret(event.step)
+    application.rotate_secret(event.step, event.secret_id)
