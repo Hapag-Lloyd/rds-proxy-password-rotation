@@ -1,15 +1,24 @@
 from enum import Enum
+
+from dependency_injector.wiring import inject, Provide
 from pydantic import BaseModel, Field
 
 from aws_lambda_powertools.utilities.parser import event_parser
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
+from rds_proxy_password_rotatation.adapter.container import Container
+from rds_proxy_password_rotatation.password_rotation_application import PasswordRotationApplication
+
 
 class RotationStep(Enum):
     CREATE_SECRET = "create_secret"
+    """Create a new version of the secret"""
     SET_SECRET = "set_secret"
+    """Change the credentials in the database or service"""
     TEST_SECRET = "test_secret"
+    """Test the new secret version"""
     FINISH_SECRET = "finish_secret"
+    """Finish the rotation"""
 
 
 class AwsSecretManagerRotationEvent(BaseModel):
@@ -30,7 +39,13 @@ class AwsSecretManagerRotationEvent(BaseModel):
 
 @event_parser(model=AwsSecretManagerRotationEvent)
 def lambda_handler(event: AwsSecretManagerRotationEvent, context: LambdaContext) -> None:
-    print(event)
-    print(context)
+    container = Container()
+    container.config.api_key.from_env("API_KEY", required=True)
+    container.config.timeout.from_env("TIMEOUT", as_=int, default=5)
+    container.wire(modules=[__name__])
 
-    return event
+    __call_application(event)
+
+@inject
+def __call_application(event: AwsSecretManagerRotationEvent, application: PasswordRotationApplication = Provide[Container.password_rotation_application]) -> None:
+    application.rotate_secret(event.step)
