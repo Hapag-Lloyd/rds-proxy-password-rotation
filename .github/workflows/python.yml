@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --cache-dir .pip-cache -e ".[test]"
+          python -m pip install -e ".[test]"
 
       - name: Test on ${{ matrix.python-version }}
         run: |
