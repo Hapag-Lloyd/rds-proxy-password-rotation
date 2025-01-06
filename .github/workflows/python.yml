@@ -1,0 +1,54 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python package
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Test on ${{ matrix.python-version }}
+        run: |
+          tox -e py
+
+      - name: Check Distribution
+        if: ${{ matrix.python-version == '3.10' }}
+        run: |
+          tox -e dist-check
+
+      - name: Codestyle
+        if: ${{ matrix.python-version == '3.10' }}
+        run: |
+          tox -e codestyle
+
+      - name: Lint - sort
+        if: ${{ matrix.python-version == '3.10' }}
+        run: |
+          tox -e sort
+
+      - name: Security
+        if: ${{ matrix.python-version == '3.10' }}
+        run: |
+          tox -e security
+
+      - name: Docs
+        if: ${{ matrix.python-version == '3.10' }}
+        run: |
+          tox -e docs
