@@ -2,7 +2,7 @@ from enum import Enum
 
 from aws_lambda_powertools import Logger
 
-from rds_proxy_password_rotatation.adapter.aws_lambda_function import RotationStep
+from rds_proxy_password_rotatation.model import RotationStep
 from rds_proxy_password_rotatation.services import SecretsManager
 
 

@@ -7,10 +7,11 @@ from aws_lambda_powertools.utilities.parser import event_parser
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
 from rds_proxy_password_rotatation.adapter.container import Container
+from rds_proxy_password_rotatation.model import RotationStep
 from rds_proxy_password_rotatation.password_rotation_application import PasswordRotationApplication
 
 
-class RotationStep(Enum):
+class AwsRotationStep(Enum):
     CREATE_SECRET = "create_secret"
     """Create a new version of the secret"""
     SET_SECRET = "set_secret"
@@ -19,6 +20,20 @@ class RotationStep(Enum):
     """Test the new secret version"""
     FINISH_SECRET = "finish_secret"
     """Finish the rotation"""
+
+    @staticmethod
+    def to_rotation_step(step: str) -> RotationStep:
+        match step:
+            case AwsRotationStep.CREATE_SECRET:
+                return RotationStep.CREATE_SECRET
+            case AwsRotationStep.SET_SECRET:
+                return RotationStep.SET_SECRET
+            case AwsRotationStep.TEST_SECRET:
+                return RotationStep.TEST_SECRET
+            case AwsRotationStep.FINISH_SECRET:
+                return RotationStep.FINISH_SECRET
+            case _:
+                raise ValueError(f"Invalid rotation step: {step}")
 
 
 class AwsSecretManagerRotationEvent(BaseModel):
@@ -31,7 +46,7 @@ class AwsSecretManagerRotationEvent(BaseModel):
 
     RotationToken – A unique identifier that indicates the source of the request. Required for secret rotation using an assumed role or cross-account rotation, in which you rotate a secret in one account by using a Lambda rotation function in another account. In both cases, the rotation function assumes an IAM role to call Secrets Manager and then Secrets Manager uses the rotation token to validate the IAM role identity.
     """
-    step: RotationStep = Field(alias='Step')
+    step: AwsRotationStep = Field(alias='Step')
     secret_id: str = Field(alias='SecretId')
     client_request_token: str = Field(alias='ClientRequestToken')
     rotation_token: str = Field(alias='RotationToken')
