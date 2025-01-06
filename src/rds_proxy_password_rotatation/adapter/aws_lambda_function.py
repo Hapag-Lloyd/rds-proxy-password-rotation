@@ -24,13 +24,13 @@ class AwsRotationStep(Enum):
     @staticmethod
     def to_rotation_step(step: str) -> RotationStep:
         match step:
-            case AwsRotationStep.CREATE_SECRET:
+            case AwsRotationStep.CREATE_SECRET.value:
                 return RotationStep.CREATE_SECRET
-            case AwsRotationStep.SET_SECRET:
+            case AwsRotationStep.SET_SECRET.value:
                 return RotationStep.SET_SECRET
-            case AwsRotationStep.TEST_SECRET:
+            case AwsRotationStep.TEST_SECRET.value:
                 return RotationStep.TEST_SECRET
-            case AwsRotationStep.FINISH_SECRET:
+            case AwsRotationStep.FINISH_SECRET.value:
                 return RotationStep.FINISH_SECRET
             case _:
                 raise ValueError(f"Invalid rotation step: {step}")
@@ -63,4 +63,4 @@ def lambda_handler(event: AwsSecretManagerRotationEvent, context: LambdaContext)
 
 @inject
 def __call_application(event: AwsSecretManagerRotationEvent, application: PasswordRotationApplication = Provide[Container.password_rotation_application]) -> None:
-    application.rotate_secret(event.step, event.secret_id)
+    application.rotate_secret(AwsRotationStep.to_rotation_step(event.step.value), event.secret_id)
