@@ -3,7 +3,7 @@ from enum import Enum
 from aws_lambda_powertools import Logger
 
 from rds_proxy_password_rotatation.model import RotationStep
-from rds_proxy_password_rotatation.services import SecretsManager
+from rds_proxy_password_rotatation.services import SecretsManagerService
 
 
 class PasswordRotationResult(Enum):
@@ -11,7 +11,7 @@ class PasswordRotationResult(Enum):
 
 
 class PasswordRotationApplication:
-    def __init__(self, secrets_manager: SecretsManager, logger: Logger):
+    def __init__(self, secrets_manager: SecretsManagerService, logger: Logger):
         self.secrets_manager = secrets_manager
         self.logger = logger
 

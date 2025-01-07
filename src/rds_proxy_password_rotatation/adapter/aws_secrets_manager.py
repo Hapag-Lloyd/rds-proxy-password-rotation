@@ -1,9 +1,9 @@
 import boto3
 
-from rds_proxy_password_rotatation.services import SecretsManager
+from rds_proxy_password_rotatation.services import SecretsManagerService
 
 
-class AwsSecretsManager(SecretsManager):
+class AwsSecretsManagerService(SecretsManagerService):
     def __init__(self):
         self.client = boto3.client('secretsmanager')
 
