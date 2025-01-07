@@ -1,7 +1,7 @@
 from unittest import TestCase
 
+from rds_proxy_password_rotatation.adapter.aws_lambda_function_model import AwsRotationStep
 from rds_proxy_password_rotatation.model import RotationStep
-from rds_proxy_password_rotatation.adapter.aws_lambda_function import AwsRotationStep
 
 class TestAwsRotationStep(TestCase):
     def test_should_return_rotation_step_when_to_rotation_step_given_create_secret(self):

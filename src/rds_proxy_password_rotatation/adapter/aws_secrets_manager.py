@@ -1,4 +1,3 @@
-import boto3
 from mypy_boto3_secretsmanager.client import SecretsManagerClient
 
 from rds_proxy_password_rotatation.services import SecretsManagerService
