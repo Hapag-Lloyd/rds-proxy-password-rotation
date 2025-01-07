@@ -2,12 +2,15 @@ import uuid
 from unittest import TestCase
 
 import boto3
+import os
 
 from rds_proxy_password_rotatation.adapter.aws_secrets_manager import AwsSecretsManagerService
 
 class TestAwsSecretsManagerService(TestCase):
     __secretname_without_rotation = f'secret_without_rotation_enabled_{uuid.uuid4()}'
     __secretname_with_rotation = f'secret_with_rotation_enabled_{uuid.uuid4()}'
+
+    __test_path = os.path.join(os.path.dirname(__file__), '..', '..')
 
     @classmethod
     def setUpClass(self):
@@ -33,7 +36,7 @@ class TestAwsSecretsManagerService(TestCase):
                                         aws_secret_access_key='test', region_name='eu-central-1')
 
         self.s3_client.create_bucket(Bucket='s3bucket', CreateBucketConfiguration={'LocationConstraint': 'eu-central-1'})
-        self.s3_client.upload_file('tests/lambda_function.zip', 's3bucket', 'function.zip')
+        self.s3_client.upload_file(os.path.join(self.__test_path, 'lambda_function.zip'), 's3bucket', 'function.zip')
 
         self.lambda_client = boto3.client('lambda', endpoint_url='http://localhost:4566',aws_access_key_id='test',
                                      aws_secret_access_key='test', region_name='eu-central-1')
