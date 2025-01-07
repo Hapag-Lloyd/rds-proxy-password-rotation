@@ -33,7 +33,7 @@ class TestAwsSecretsManagerService(TestCase):
                                         aws_secret_access_key='test', region_name='eu-central-1')
 
         self.s3_client.create_bucket(Bucket='s3bucket', CreateBucketConfiguration={'LocationConstraint': 'eu-central-1'})
-        self.s3_client.upload_file('lambda_function.zip', 's3bucket', 'function.zip')
+        self.s3_client.upload_file('tests/lambda_function.zip', 's3bucket', 'function.zip')
 
         self.lambda_client = boto3.client('lambda', endpoint_url='http://localhost:4566',aws_access_key_id='test',
                                      aws_secret_access_key='test', region_name='eu-central-1')
