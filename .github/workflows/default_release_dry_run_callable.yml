@@ -1,0 +1,40 @@
+---
+name: Release Test
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+      - release-dry-run
+
+jobs:
+  dry-release:
+    name: Release dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dry branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: release-dry-run
+
+      - name: Setup release
+        run: |
+          # using same ref as in calling workflow
+          git clone https://github.com/Hapag-Lloyd/Workflow-Templates.git .release_clone
+          git checkout ${{ github.action_ref }}
+
+          mv .release_clone/.release_github_only_auto .release
+          mv .release/.releaserc.yml .releaserc.yml
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: "lts/*"
+
+      - name: Install dependencies
+        run: npm --prefix .release/ ci
+
+      - name: Dry run
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_GH_TOKEN }}
+        run: unset GITHUB_ACTIONS && npx --prefix .release/ semantic-release --dry-run --no-ci --debug
