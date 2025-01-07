@@ -1,3 +1,4 @@
+import boto3
 from aws_lambda_powertools import Logger
 from dependency_injector import containers, providers
 
@@ -12,8 +13,11 @@ class Container(containers.DeclarativeContainer):
         Logger,
     )
 
+    boto3_secrets_manager = boto3.client(service_name='secretsmanager',)
+
     secrets_manager = providers.Singleton(
         AwsSecretsManagerService,
+        boto3_secrets_manager=boto3_secrets_manager,
     )
 
     password_rotation_application = providers.Singleton(
