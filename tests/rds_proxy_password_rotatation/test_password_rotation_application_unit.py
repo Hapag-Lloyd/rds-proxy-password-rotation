@@ -17,7 +17,7 @@ class TestPasswordRotationApplication(TestCase):
         application = PasswordRotationApplication(secrets_manager, Mock(spec=Logger))
 
         # When
-        result = application.rotate_secret(RotationStep.CREATE_SECRET, 'secret_id')
+        result = application.rotate_secret(RotationStep.CREATE_SECRET, 'secret_id', 'token')
 
         # Then
         self.assertEqual(result, PasswordRotationResult.NOTHING_TO_ROTATE)
@@ -32,7 +32,7 @@ class TestPasswordRotationApplication(TestCase):
         application = PasswordRotationApplication(secrets_manager, logger)
 
         # When
-        application.rotate_secret(RotationStep.CREATE_SECRET, 'secret_id')
+        application.rotate_secret(RotationStep.CREATE_SECRET, 'secret_id', 'token')
 
         # Then
         logger.warning.assert_called()

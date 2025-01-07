@@ -1,8 +1,11 @@
 import uuid
 from unittest import TestCase
+from unittest.mock import Mock
 
 import boto3
 import os
+
+from aws_lambda_powertools import Logger
 
 from rds_proxy_password_rotatation.adapter.aws_secrets_manager import AwsSecretsManagerService
 
@@ -96,7 +99,7 @@ class TestAwsSecretsManagerService(TestCase):
         # Given
 
         # When
-        result = AwsSecretsManagerService(self.secretsmanager).is_rotation_enabled(self.__secret_name_without_rotation)
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).is_rotation_enabled(self.__secret_name_without_rotation)
 
         # Then
         self.assertFalse(result)
@@ -105,7 +108,7 @@ class TestAwsSecretsManagerService(TestCase):
         # Given
 
         # When
-        result = AwsSecretsManagerService(self.secretsmanager).is_rotation_enabled(self.__secret_name_with_rotation)
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).is_rotation_enabled(self.__secret_name_with_rotation)
 
         # Then
         self.assertTrue(result)
