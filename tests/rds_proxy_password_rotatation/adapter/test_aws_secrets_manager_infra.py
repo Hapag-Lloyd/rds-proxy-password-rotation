@@ -12,7 +12,7 @@ class TestAwsSecretsManagerService(TestCase):
     @classmethod
     def setUpClass(self):
         self.secretsmanager = boto3.client(service_name='secretsmanager', endpoint_url='http://localhost:4566',aws_access_key_id='test',
-                                      aws_secret_access_key='test')
+                                      aws_secret_access_key='test', region_name='eu-central-1')
         secret = self.secretsmanager.create_secret(
             Name=self.secretname_without_rotation
         )
