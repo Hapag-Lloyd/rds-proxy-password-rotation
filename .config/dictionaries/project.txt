@@ -1,5 +1,6 @@
 abstractmethod
 awscurrent
+awspending
 boto
 classmethod
 localstack

@@ -1,3 +1,4 @@
+---
 # https://qxf2.com/blog/testing-aws-lambda-locally-using-localstack-and-pytest/
 services:
   localstack:

@@ -1,4 +1,5 @@
-:warning: **Work in progress** :warning:
+# :warning: **Work in progress** :warning:
+
 - implement step CREATE_SECRET
 - implement step SET_SECRET
 - implement step TEST_SECRET
@@ -12,11 +13,11 @@ Python script for multi-user password rotation using RDS and RDS proxy. It suppo
 ## Pre-requisites
 
 1. Python 3.10 or later
-2. For each db user: 
+2. For each db user:
    1. Create a secret in AWS Secrets Manager with the following key-value pairs:
-     - `username`: The username for the user
-     - `password`: The password for the user
-     This credential will be used by the application to connect to the proxy. You may add additional key-value pairs as needed.
+      - `username`: The username for the user
+      - `password`: The password for the user
+      This credential will be used by the application to connect to the proxy. You may add additional key-value pairs as needed.
    2. Clone the user in the database and grant the necessary permissions. We suggest to add a `-clone` suffix to the username.
    3. Create two secrets (for the original user and the clone) in AWS Secrets Manager with the following key-value pairs:
      - `username`: The username for the user
