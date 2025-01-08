@@ -3,7 +3,7 @@ from dependency_injector.wiring import inject, Provide
 from aws_lambda_powertools.utilities.parser import event_parser
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
-from rds_proxy_password_rotatation.adapter.aws_lambda_function_model import AwsRotationStep, AwsSecretManagerRotationEvent
+from rds_proxy_password_rotatation.adapter.aws_lambda_function_model import AwsSecretManagerRotationEvent
 from rds_proxy_password_rotatation.adapter.container import Container
 from rds_proxy_password_rotatation.password_rotation_application import PasswordRotationApplication
 
