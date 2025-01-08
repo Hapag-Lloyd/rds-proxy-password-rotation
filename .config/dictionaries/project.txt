@@ -1,4 +1,9 @@
+abstractmethod
+awscurrent
 boto
+classmethod
+localstack
+mypy
 powertools
 pydantic
 pytest
