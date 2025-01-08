@@ -35,6 +35,11 @@ jobs:
         with:
           compose-file: "./tests/docker-compose.yml"
 
+      - uses: astral-sh/ruff-action@v3
+        name: Lint on ${{ matrix.python-version }}
+        with:
+          args: "check"
+
       - name: Test on ${{ matrix.python-version }}
         run: |
           pytest -v --doctest-modules --junitxml=junit/test-results.xml --cov-report=xml --cov-report=html
