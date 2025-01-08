@@ -1,0 +1,11 @@
+abstractmethod
+awscurrent
+awspending
+boto
+classmethod
+localstack
+mypy
+powertools
+pydantic
+pytest
+rotatation
