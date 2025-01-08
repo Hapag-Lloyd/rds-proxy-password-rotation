@@ -34,7 +34,7 @@ jobs:
         name: Lint on ${{ matrix.python-version }}
         with:
           args: "check"
-          # renovate: datasource=github-releases depName=astral-sh/ruff-action
+          # renovate: datasource=github-releases depName=astral-sh/ruff
           version: "0.8.6"
 
   test:
