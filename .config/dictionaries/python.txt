@@ -1,0 +1,9 @@
+dists
+doctest
+hoverkraft
+junitxml
+pycache
+pypa
+pypi
+pytest
+setuptools

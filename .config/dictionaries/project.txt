@@ -1,0 +1,5 @@
+boto
+powertools
+pydantic
+pytest
+rotatation
