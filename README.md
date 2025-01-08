@@ -1,12 +1,11 @@
-# :warning: **Work in progress** :warning:
+# rds-proxy-password-rotation
+:warning: **Work in progress** :warning:
 
 - implement step CREATE_SECRET
 - implement step SET_SECRET
 - implement step TEST_SECRET
 - implement step FINISH_SECRET
 - add Terraform module
-
-# rds-proxy-password-rotation
 
 Python script for multi-user password rotation using RDS and RDS proxy. It supports a separate credential for the application.
 
