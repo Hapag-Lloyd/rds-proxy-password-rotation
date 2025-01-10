@@ -1,6 +1,10 @@
 ---
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+#
+# Global variables from project settings:
+#   PYTHON_VERSION: The minimum Python version to support.
+#   PYTHON_VERSIONS: The Python versions to test. Usually a list of newer versions we support.
+#
 
 name: Python build
 
@@ -14,17 +18,12 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ vars.PYTHON_VERSION }}
         uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ vars.PYTHON_VERSION }}
           cache: 'pip'
           cache-dependency-path: setup.cfg
 
@@ -33,7 +32,7 @@ jobs:
           python -m pip install -e "."
 
       - uses: astral-sh/ruff-action@e6390afda04da2e9ef69fe1e2ae0264164550c21 # v3.0.1
-        name: Lint on ${{ matrix.python-version }}
+        name: Lint on ${{ vars.PYTHON_VERSION }}
         with:
           args: "check"
           # renovate: datasource=github-releases depName=astral-sh/ruff
@@ -44,8 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-
+        python-version: ${{ fromJSON(vars.PYTHON_VERSIONS) }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up Python ${{ matrix.python-version }}

@@ -1,4 +1,11 @@
 ---
+
+#
+# Global variables from project settings:
+#   PYPI_URL: The URL of the PyPI project, e.g. https://pypi.org/p/my-fancy-package
+#   PYTHON_VERSION: The minimum Python version to support.
+#
+
 name: Publish Python 🐍 distribution 📦 to PyPI
 
 # yamllint disable-line rule:truthy
@@ -14,10 +21,10 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
-      - name: Set up Python 3.10
+      - name: Set up Python ${{ vars.PYTHON_VERSION }}
         uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
         with:
-          python-version: "3.10"
+          python-version: ${{ vars.PYTHON_VERSION }}
           cache: 'pip'
           cache-dependency-path: setup.cfg
       - name: Install pypa/build
@@ -40,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/rds-proxy-password-rotation  # Replace <package-name> with your PyPI project name
+      url: ${{ vars.PYPI_URL }}
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
