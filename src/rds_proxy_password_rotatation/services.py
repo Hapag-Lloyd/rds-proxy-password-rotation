@@ -13,13 +13,9 @@ class PasswordService(ABC):
         pass
 
     @abstractmethod
-    def get_credential(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials | None:
+    def get_database_credential(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials | None:
         pass
 
     @abstractmethod
-    def update_credential(self, ) -> None:
-        pass
-
-    @abstractmethod
-    def set_new_pending_password(self,secret_id: str, stage: PasswordStage, token: str, credential: DatabaseCredentials):
+    def set_new_pending_password(self,secret_id: str, token: str, credential: DatabaseCredentials):
         pass

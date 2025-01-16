@@ -36,11 +36,14 @@ class AwsSecretsManagerService(PasswordService):
         else:
             return True
 
-    def get_credential(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials | None:
+    def get_database_credential(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials | None:
         stage_string = AwsSecretsManagerService.__get_stage_string(stage)
 
         try:
-            secret = self.client.get_secret_value(SecretId=secret_id, VersionId=token, VersionStage=stage_string)
+            if token is None:
+                secret = self.client.get_secret_value(SecretId=secret_id, VersionStage=stage_string)
+            else:
+                secret = self.client.get_secret_value(SecretId=secret_id, VersionId=token, VersionStage=stage_string)
 
             return DatabaseCredentials.model_validate_json(secret['SecretString'])
         except ValidationError as e:
@@ -52,18 +55,17 @@ class AwsSecretsManagerService(PasswordService):
 
         return None
 
-    def set_new_pending_password(self,secret_id: str, stage: PasswordStage, token: str, credential: DatabaseCredentials):
+    def set_new_pending_password(self, secret_id: str, token: str, credential: DatabaseCredentials):
         if token is None:
             token = str(uuid4())
 
-        pending_credential = credential.model_copy()
-        pending_credential.password = self.client.get_random_password(ExcludeCharacters=':/@"\'\\')['RandomPassword']
+        pending_credential = credential.model_copy(update={'password': self.client.get_random_password(ExcludeCharacters=':/@"\'\\')['RandomPassword']})
 
         self.client.put_secret_value(
                 SecretId=secret_id,
                 ClientRequestToken=token,
                 SecretString=pending_credential.model_dump_json(),
-                VersionStages=[AwsSecretsManagerService.__get_stage_string(stage)])
+                VersionStages=[AwsSecretsManagerService.__get_stage_string(PasswordStage.PENDING)])
 
         self.logger.info(f'new pending secret created: {secret_id} and version {token}')
 
