@@ -6,8 +6,8 @@ from mypy_boto3_secretsmanager.client import SecretsManagerClient
 from mypy_boto3_secretsmanager.type_defs import DescribeSecretResponseTypeDef
 from pydantic import ValidationError
 
-from rds_proxy_password_rotatation.model import DatabaseCredentials, PasswordStage
-from rds_proxy_password_rotatation.services import PasswordService
+from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage
+from rds_proxy_password_rotation.services import PasswordService
 
 
 class AwsSecretsManagerService(PasswordService):

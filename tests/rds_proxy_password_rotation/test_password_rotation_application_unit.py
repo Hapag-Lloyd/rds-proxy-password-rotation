@@ -3,9 +3,9 @@ from unittest.mock import Mock
 
 from aws_lambda_powertools import Logger
 
-from rds_proxy_password_rotatation.model import RotationStep
-from rds_proxy_password_rotatation.password_rotation_application import PasswordRotationApplication, PasswordRotationResult
-from rds_proxy_password_rotatation.services import PasswordService
+from rds_proxy_password_rotation.model import RotationStep
+from rds_proxy_password_rotation.password_rotation_application import PasswordRotationApplication, PasswordRotationResult
+from rds_proxy_password_rotation.services import PasswordService
 
 
 class TestPasswordRotationApplication(TestCase):

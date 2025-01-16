@@ -2,7 +2,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-from rds_proxy_password_rotatation.model import RotationStep
+from rds_proxy_password_rotation.model import RotationStep
 
 
 class AwsRotationStep(Enum):
