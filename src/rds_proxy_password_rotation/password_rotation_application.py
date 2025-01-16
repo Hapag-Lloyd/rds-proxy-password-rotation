@@ -2,7 +2,7 @@ from enum import Enum
 
 from aws_lambda_powertools import Logger
 
-from rds_proxy_password_rotation.model import RotationStep
+from rds_proxy_password_rotation.model import RotationStep, PasswordStage
 from rds_proxy_password_rotation.services import PasswordService
 
 
@@ -44,7 +44,7 @@ class PasswordRotationApplication:
         already exists.
         """
 
-        credentials_to_rotate = self.password_service.get_database_credential(secret_id, 'AWSCURRENT')
+        credentials_to_rotate = self.password_service.get_database_credential(secret_id, PasswordStage.CURRENT)
 
         current_username = credentials_to_rotate.username
         new_username = PasswordRotationApplication.__get_other_username(current_username)
@@ -52,14 +52,14 @@ class PasswordRotationApplication:
 
         if is_multi_user_rotation:
             # we rotate the previous user's password, so the current user is still valid
-            credentials_to_rotate = self.password_service.get_database_credential(secret_id, 'AWSPREVIOUS')
+            credentials_to_rotate = self.password_service.get_database_credential(secret_id, PasswordStage.PREVIOUS)
 
-        pending_credentials = self.password_service.get_database_credential(secret_id, token)
+        pending_credentials = self.password_service.get_database_credential(secret_id, PasswordStage.PENDING, token)
 
         if pending_credentials and pending_credentials.username == credentials_to_rotate['username']:
             return
 
-        self.password_service.set_new_pending_password(secret_id, 'AWSPENDING', token, credentials_to_rotate)
+        self.password_service.set_new_pending_password(secret_id, token, credentials_to_rotate)
 
     @staticmethod
     def __get_other_username(username: str) -> str:
