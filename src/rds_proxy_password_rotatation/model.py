@@ -1,7 +1,6 @@
 from enum import Enum
 
 from pydantic import BaseModel
-from pydantic.dataclasses import dataclass
 
 
 class RotationStep(Enum):

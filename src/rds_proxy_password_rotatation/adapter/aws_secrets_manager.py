@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from aws_lambda_powertools import Logger
-from cachetools import cached
+from cachetools import cached, LRUCache
 from mypy_boto3_secretsmanager.client import SecretsManagerClient
 from mypy_boto3_secretsmanager.type_defs import DescribeSecretResponseTypeDef
 from pydantic import ValidationError
@@ -67,7 +67,7 @@ class AwsSecretsManagerService(PasswordService):
 
         self.logger.info(f'new pending secret created: {secret_id} and version {token}')
 
-    @cached
+    @cached(cache=LRUCache(maxsize=20))
     def __get_secret_metadata(self, secret_id: str) -> DescribeSecretResponseTypeDef:
         return self.client.describe_secret(SecretId=secret_id)
 
