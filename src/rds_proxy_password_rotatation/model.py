@@ -21,8 +21,7 @@ class PasswordStage(Enum):
     PREVIOUS = "PREVIOUS"
 
 
-@dataclass(frozen=True)
-class DatabaseCredentials(BaseModel, extra='allow'):
+class DatabaseCredentials(BaseModel, frozen=True, extra='allow'):
     username: str
     password: str
 
