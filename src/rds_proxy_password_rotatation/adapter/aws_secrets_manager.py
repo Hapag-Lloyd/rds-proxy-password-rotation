@@ -47,7 +47,7 @@ class AwsSecretsManagerService(PasswordService):
             self.logger.error(f"Failed to parse secret value for secret {secret_id} (stage: {stage_string}, token: {token})")
 
             raise e
-        except self.client.exceptions.ResourceNotFoundException as e:
+        except self.client.exceptions.ResourceNotFoundException:
             self.logger.error(f"Failed to retrieve secret value for secret {secret_id} (stage: {stage_string}, token: {token})")
 
         return None
