@@ -1,15 +1,8 @@
-import json
 import uuid
 from unittest import TestCase
-from unittest.mock import Mock
 
 import boto3
 import os
-
-from aws_lambda_powertools import Logger
-
-from rds_proxy_password_rotation.adapter.aws_secrets_manager import AwsSecretsManagerService
-from rds_proxy_password_rotation.model import PasswordStage, DatabaseCredentials
 
 
 class TestAwsSecretsManagerService(TestCase):

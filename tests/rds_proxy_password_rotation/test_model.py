@@ -1,3 +1,4 @@
+import json
 from unittest import TestCase
 
 from rds_proxy_password_rotation.model import DatabaseCredentials
@@ -13,7 +14,7 @@ class TestDatabaseCredentials(TestCase):
         }
 
         # When
-        credentials = DatabaseCredentials.model_validate_json(data)
+        credentials = DatabaseCredentials.model_validate_json(json.dumps(data))
 
         # Then
         self.assertEqual(credentials.username, "admin")
