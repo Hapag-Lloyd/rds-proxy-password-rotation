@@ -2,7 +2,6 @@
 
 :warning: **Work in progress** :warning:
 
-- implement step SET_SECRET
 - implement step TEST_SECRET
 - implement step FINISH_SECRET
 - add docker image for AWS Lambda

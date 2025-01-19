@@ -1,6 +1,7 @@
 from enum import Enum
 
 from pydantic import BaseModel
+from typing_extensions import Optional
 
 
 class RotationStep(Enum):
@@ -24,3 +25,8 @@ class DatabaseCredentials(BaseModel, frozen=True, extra='allow'):
     username: str
     password: str
 
+    database_host: str
+    database_port: int
+    database_name: str
+
+    proxy_secret_ids: Optional[list[str]]

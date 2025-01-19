@@ -19,3 +19,13 @@ class PasswordService(ABC):
     @abstractmethod
     def set_new_pending_password(self,secret_id: str, token: str, credential: DatabaseCredentials):
         pass
+
+
+class DatabaseService(ABC):
+    @abstractmethod
+    def is_credential_valid(self, credentials: DatabaseCredentials):
+        pass
+
+    @abstractmethod
+    def set_credentials(self, credentials: DatabaseCredentials, username: str, password: str):
+        pass
