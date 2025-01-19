@@ -9,6 +9,7 @@ class TestAwsSecretsManagerService(TestCase):
     __secret_name_with_rotation = f'secret_with_rotation_enabled_{uuid.uuid4()}'
 
     __test_path = os.path.join(os.path.dirname(__file__), '..', '..')
+    print(__test_path)
 
     @classmethod
     def setUpClass(cls):
