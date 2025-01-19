@@ -1,11 +1,15 @@
 abstractmethod
 awscurrent
 awspending
+awsprevious
 boto
+cachetools
 classmethod
 localstack
+maxsize
 mypy
 powertools
 pydantic
 pytest
-rotatation
+rotation
+staticmethod

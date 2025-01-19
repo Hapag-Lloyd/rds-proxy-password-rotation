@@ -2,8 +2,8 @@ import boto3
 from aws_lambda_powertools import Logger
 from dependency_injector import containers, providers
 
-from rds_proxy_password_rotatation.adapter.aws_secrets_manager import AwsSecretsManagerService
-from rds_proxy_password_rotatation.password_rotation_application import PasswordRotationApplication
+from rds_proxy_password_rotation.adapter.aws_secrets_manager import AwsSecretsManagerService
+from rds_proxy_password_rotation.password_rotation_application import PasswordRotationApplication
 
 
 class Container(containers.DeclarativeContainer):
