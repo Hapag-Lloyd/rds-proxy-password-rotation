@@ -5,7 +5,7 @@ from aws_lambda_powertools import Logger
 
 from rds_proxy_password_rotation.model import RotationStep
 from rds_proxy_password_rotation.password_rotation_application import PasswordRotationApplication, PasswordRotationResult
-from rds_proxy_password_rotation.services import PasswordService
+from rds_proxy_password_rotation.services import PasswordService, DatabaseService
 
 
 class TestPasswordRotationApplication(TestCase):
@@ -14,7 +14,7 @@ class TestPasswordRotationApplication(TestCase):
         secrets_manager = Mock(spec=PasswordService)
         secrets_manager.is_rotation_enabled.return_value = False
 
-        application = PasswordRotationApplication(secrets_manager, Mock(spec=Logger))
+        application = PasswordRotationApplication(secrets_manager, Mock(spec=DatabaseService), Mock(spec=Logger))
 
         # When
         result = application.rotate_secret(RotationStep.CREATE_SECRET, 'secret_id', 'token')

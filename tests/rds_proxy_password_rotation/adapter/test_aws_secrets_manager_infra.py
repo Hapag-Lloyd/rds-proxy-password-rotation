@@ -143,7 +143,7 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_change_the_password_when_set_new_pending_password_given_secret_exists(self):
         # Given
-        credentials = DatabaseCredentials(username='admin', password='admin')
+        credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
@@ -167,7 +167,7 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_not_touch_additional_fields_when_set_new_pending_password_given_secret_exists(self):
         # Given
-        credentials = DatabaseCredentials(username='admin', password='admin', some_field='some_value')
+        credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', some_field='some_value')
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
@@ -192,7 +192,7 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_set_new_pending_password_when_set_new_pending_password_given_secret_exists(self):
         # Given
-        credentials = DatabaseCredentials(username='admin', password='admin')
+        credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
