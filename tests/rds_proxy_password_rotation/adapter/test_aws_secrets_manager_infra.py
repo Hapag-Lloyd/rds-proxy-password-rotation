@@ -24,12 +24,18 @@ class TestAwsSecretsManagerService(TestCase):
     def setUpClass(cls):
         secret_value = {
             "username": "admin",
-            "password": "admin"
+            "password": "admin",
+            "database_host": "localhost",
+            "database_port": 5432,
+            "database_name": "test"
         }
 
         additional_fields_secret_value = {
             "username": "admin",
             "password": "admin",
+            "database_host": "localhost",
+            "database_port": 5432,
+            "database_name": "test",
             "some_field": "some_value"
         }
 
