@@ -10,6 +10,9 @@ class TestDatabaseCredentials(TestCase):
         data = {
             "username": "admin",
             "password": "admin",
+            "database_host": "localhost",
+            "database_port": 5432,
+            "database_name": "test",
             "extra_field": "extra_value"
         }
 
