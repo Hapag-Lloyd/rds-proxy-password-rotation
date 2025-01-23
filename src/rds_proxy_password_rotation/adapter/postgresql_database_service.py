@@ -21,7 +21,7 @@ class PostgreSqlDatabaseService(DatabaseService):
             conn.close()
 
     def __get_connection(self, credentials: DatabaseCredentials) -> Connection | None:
-        connect_string = (f'dbname={credentials.database_name} sslmode=require port={credentials.database_port}'
+        connect_string = (f'dbname={credentials.database_name} sslmode=verify-full port={credentials.database_port}'
                           f' user={credentials.username} host={credentials.database_host}'
                           f' password={credentials.password}')
 

@@ -1,3 +1,4 @@
+import uuid
 from unittest import TestCase
 from unittest.mock import Mock
 
@@ -6,19 +7,19 @@ from psycopg import Connection, sql
 from aws_lambda_powertools import Logger
 
 from rds_proxy_password_rotation.adapter.postgresql_database_service import PostgreSqlDatabaseService
-from rds_proxy_password_rotation.model import UserCredentials
+from rds_proxy_password_rotation.model import UserCredentials, DatabaseCredentials
 
 
 class TestAwsSecretsManagerService(TestCase):
-    root_credentials = UserCredentials(username='postgres', password='postgres')
+    root_credentials = DatabaseCredentials(username='postgres', password='postgres', database_host='localhost', database_port=5432, database_name='postgres')
 
     def setUp(self):
         self.service = PostgreSqlDatabaseService(Mock(spec=Logger))
 
     def test_should_update_username_and_password_when_change_user_credentials_given_user_exists(self):
         # Given
-        old_credentials = UserCredentials(username='test_user', password='test_password')
-        new_credentials = UserCredentials(username='new_test_user', password='new_test_password')
+        old_credentials = self.root_credentials.model_copy(update={'username': f'test_user_{uuid.uuid4()}_a', 'password': 'test_password'})
+        new_credentials = self.root_credentials.model_copy(update={'username': f'new_test_user_{uuid.uuid4()}_a', 'password': 'new_test_password'})
 
         conn = self.__get_connection(self.root_credentials)
         self.__create_user(conn, old_credentials)
@@ -32,9 +33,9 @@ class TestAwsSecretsManagerService(TestCase):
         self.__get_connection(new_credentials).close()
         self.assertTrue(True)
 
-    def __get_connection(self, credentials: UserCredentials) -> Connection:
-        connect_string = (f'dbname=postgres sslmode=allow port=5432'
-                          f' user={credentials.username} host=localhost'
+    def __get_connection(self, credentials: DatabaseCredentials) -> Connection:
+        connect_string = (f'dbname={credentials.database_name} sslmode=disable port={credentials.database_port}'
+                          f' user={credentials.username} host={credentials.database_host}'
                           f' password={credentials.password}')
 
         return psycopg.connect(connect_string)

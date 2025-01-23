@@ -16,10 +16,16 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   postgres:
-    image: postgres:16.6
+    image: postgres:16.6-alpine
+    build:
+      context: ./postgresql-config
+      dockerfile: Dockerfile
     ports:
       - "5432:5432"
+    volumes:
+      - ./postgresql-config/init-sql:/docker-entrypoint-initdb.d/
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: password
