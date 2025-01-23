@@ -41,10 +41,6 @@ class PasswordRotationApplication:
 
     def __set_secret(self, secret_id: str, token: str):
         pending_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.PENDING, token)
-        if self.database_service.is_credential_valid(pending_credential):
-            print(f'set_secret: the pending credentials for secret {secret_id} are already valid')
-            return
-
         current_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.CURRENT)
         is_multi_user_rotation = self.password_service.is_multi_user_rotation(secret_id)
 
@@ -69,7 +65,7 @@ class PasswordRotationApplication:
         self.database_service.change_user_credentials(current_credential, pending_credential)
         # database and proxy user credentials have to be in sync as the proxy user is used to connect to the database
         if proxy_secret_id is not None:
-            self.password_service.set_credential(secret_id, token, proxy_secret)
+            self.password_service.set_credentials(secret_id, token, proxy_secret)
 
         self.logger.info(f'set_secret: successfully set password for user {pending_credential.username} for secret {secret_id}')
 

@@ -22,13 +22,9 @@ class TestAwsSecretsManagerService(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        secret_value = {
-            "username": "admin",
-            "password": "admin",
-            "database_host": "localhost",
-            "database_port": 5432,
-            "database_name": "test"
-        }
+        secret_value_without_rotation = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+
+        secret_value_with_rotation = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test')
 
         additional_fields_secret_value = {
             "username": "admin",
@@ -53,7 +49,7 @@ class TestAwsSecretsManagerService(TestCase):
         )
         cls.secretsmanager.put_secret_value(
             SecretId=cls.__secret_name_without_rotation,
-            SecretString=json.dumps(secret_value)
+            SecretString=secret_value_without_rotation.model_dump_json()
         )
 
         # secret with missing fields
@@ -108,7 +104,7 @@ class TestAwsSecretsManagerService(TestCase):
         )
         cls.secretsmanager.put_secret_value(
             SecretId=cls.__secret_name_with_rotation,
-            SecretString=str(secret_value)
+            SecretString=secret_value_with_rotation.model_dump_json()
         )
 
         cls.secretsmanager.rotate_secret(
@@ -259,3 +255,72 @@ class TestAwsSecretsManagerService(TestCase):
 
         # Then
         self.assertTrue(result)
+
+    def test_should_return_user_2_when_get_other_username_given_user_1_for_multi_user_rotation(self):
+        # Given
+
+        # When
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_other_username('user1')
+
+        # Then
+        self.assertEqual(result, 'user2')
+
+    def test_should_return_user_1_when_get_other_username_given_user_2_for_multi_user_rotation(self):
+        # Given
+
+        # When
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_other_username('user2')
+
+        # Then
+        self.assertEqual(result, 'user1')
+
+    def test_should_return_user_when_get_other_username_given_user_for_single_user_rotation(self):
+        # Given
+
+        # When
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_other_username('user')
+
+        # Then
+        self.assertEqual(result, 'user')
+
+    def test_should_return_false_when_is_multi_user_rotation_given_username_does_not_end_with_1_2(self):
+        # Given
+
+        # When
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).is_multi_user_rotation(self.__secret_name_without_rotation)
+
+        # Then
+        self.assertFalse(result)
+
+    def test_should_return_true_when_is_multi_user_rotation_given_username_ends_with_1_2(self):
+        # Given
+
+        # When
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).is_multi_user_rotation(self.__secret_name_with_rotation)
+
+        # Then
+        self.assertTrue(result)
+
+    def test_should_update_the_secret_when_set_credentials_given_secret_exists(self):
+        # Given
+        credentials = DatabaseCredentials(username='xxx', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        token = str(uuid.uuid4())
+        credential_name = str(uuid.uuid4())
+
+        self.secretsmanager.create_secret(
+            Name=credential_name
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=credentials.model_dump_json()
+        )
+
+        # When
+        AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).set_credentials(
+            credential_name, token, credentials.model_copy(update={'password': 'new_password'}))
+
+        # Then
+        secret = self.secretsmanager.get_secret_value(SecretId=credential_name, VersionStage='AWSCURRENT', VersionId=token)
+
+        self.assertIsNotNone(secret)
+        self.assertEqual(DatabaseCredentials.model_validate_json(secret['SecretString']).password, 'new_password')

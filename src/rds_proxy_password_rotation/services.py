@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials
+from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials, Credentials
 
 
 class PasswordService(ABC):
@@ -25,7 +25,7 @@ class PasswordService(ABC):
         pass
 
     @abstractmethod
-    def set_credential(self, secret_id: str, token: str, credential: DatabaseCredentials):
+    def set_credentials(self, secret_id: str, token: str, credential: Credentials):
         pass
 
     @abstractmethod

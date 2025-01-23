@@ -21,11 +21,16 @@ class PasswordStage(Enum):
     PREVIOUS = "PREVIOUS"
 
 
-class UserCredentials(BaseModel, frozen=True, extra='allow'):
+class Credentials(BaseModel, frozen=True, extra='allow'):
+    pass
+
+
+class UserCredentials(Credentials):
     username: str
     password: str
 
-class DatabaseCredentials(UserCredentials, frozen=True, extra='allow'):
+
+class DatabaseCredentials(UserCredentials):
     database_host: str
     database_port: int
     database_name: str

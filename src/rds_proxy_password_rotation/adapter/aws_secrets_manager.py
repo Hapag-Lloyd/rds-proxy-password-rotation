@@ -5,7 +5,7 @@ from mypy_boto3_secretsmanager.client import SecretsManagerClient
 from mypy_boto3_secretsmanager.type_defs import DescribeSecretResponseTypeDef
 from pydantic import ValidationError
 
-from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials
+from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials, Credentials
 from rds_proxy_password_rotation.services import PasswordService
 
 
@@ -88,14 +88,14 @@ class AwsSecretsManagerService(PasswordService):
 
         self.logger.info(f'new pending secret created: {secret_id} and version {token}')
 
-    def set_credential(self, secret_id: str, token: str, credential: DatabaseCredentials):
+    def set_credentials(self, secret_id: str, token: str, credentials: Credentials):
         if token is None:
             token = str(uuid4())
 
         self.client.put_secret_value(
             SecretId=secret_id,
             ClientRequestToken=token,
-            SecretString=credential.model_dump_json(),
+            SecretString=credentials.model_dump_json(),
             VersionStages=[AwsSecretsManagerService.__get_stage_string(PasswordStage.CURRENT)])
 
         self.logger.info(f'credentials modified: {secret_id} and version {token}')
@@ -117,7 +117,7 @@ class AwsSecretsManagerService(PasswordService):
 
     def is_multi_user_rotation(self, secret_id: str) -> bool:
         secret = self.client.get_secret_value(SecretId=secret_id, VersionStage='AWSCURRENT')
-
+        print(secret)
         current_username = DatabaseCredentials.model_validate_json(secret['SecretString']).username
         other_username = self.get_other_username(current_username)
 
