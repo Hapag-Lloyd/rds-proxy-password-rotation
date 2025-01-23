@@ -21,12 +21,13 @@ class PasswordStage(Enum):
     PREVIOUS = "PREVIOUS"
 
 
-class DatabaseCredentials(BaseModel, frozen=True, extra='allow'):
+class UserCredentials(BaseModel, frozen=True, extra='allow'):
     username: str
     password: str
 
+class DatabaseCredentials(UserCredentials, frozen=True, extra='allow'):
     database_host: str
     database_port: int
     database_name: str
 
-    proxy_secret_ids: Optional[list[str]]
+    proxy_secret_ids: Optional[list[UserCredentials]] = None

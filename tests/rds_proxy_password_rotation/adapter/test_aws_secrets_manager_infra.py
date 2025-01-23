@@ -211,7 +211,7 @@ class TestAwsSecretsManagerService(TestCase):
         # Given
 
         # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_database_credential(
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_database_credentials(
             self.__secret_name_without_rotation, PasswordStage.CURRENT)
 
         # Then
@@ -223,14 +223,14 @@ class TestAwsSecretsManagerService(TestCase):
 
         # When
         with self.assertRaises(ValueError):
-            AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_database_credential(
+            AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_database_credentials(
                 self.__secret_name_with_missing_fields, PasswordStage.CURRENT)
 
     def test_should_return_null_when_get_database_credential_given_secret_does_not_exist(self):
         # Given
 
         # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_database_credential(
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_database_credentials(
             'non_existing_secret', PasswordStage.CURRENT)
 
         # Then
