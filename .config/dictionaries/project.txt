@@ -9,6 +9,7 @@ localstack
 maxsize
 mypy
 powertools
+psycopg
 pydantic
 pytest
 rotation
