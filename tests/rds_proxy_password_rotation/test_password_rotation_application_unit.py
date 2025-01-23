@@ -29,7 +29,7 @@ class TestPasswordRotationApplication(TestCase):
 
         logger = Mock(spec=Logger)
 
-        application = PasswordRotationApplication(secrets_manager, logger)
+        application = PasswordRotationApplication(secrets_manager, Mock(spec=DatabaseService), logger)
 
         # When
         application.rotate_secret(RotationStep.CREATE_SECRET, 'secret_id', 'token')
