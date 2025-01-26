@@ -1,8 +1,15 @@
-FROM postgres:16.6-alpine
+FROM postgres:13-alpine
 
-COPY ssl/server.key /var/lib/postgresql/server.key
-COPY ssl/server.crt /var/lib/postgresql/server.crt
+RUN apk add --no-cache openssl
 
-# update the privileges on the .key, no need to touch the .crt
-RUN chmod 0600 /var/lib/postgresql/server.key && \
-    chown postgres:postgres /var/lib/postgresql/server.key
+RUN mkdir /certs
+
+WORKDIR /certs
+
+RUN openssl req -new -x509 -days 3650 -nodes -text -out server.crt -keyout server.key -subj "/CN=localhost" && \
+    chmod og-rwx server.key && \
+    openssl req -new -nodes -text -out root.csr -keyout root.key -subj "/CN=localhost" && \
+    chmod og-rwx root.key && \
+    openssl x509 -req -in root.csr -text -days 3650 -extfile /etc/ssl/openssl.cnf -extensions v3_ca -signkey root.key -out root.crt && \
+    chown 0:70 /certs/* && \
+    chmod 640 /certs/*

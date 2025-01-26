@@ -62,7 +62,7 @@ class PasswordRotationApplication:
                 proxy_secret_id = secret_id
                 break
 
-        self.database_service.change_user_credentials(current_credential, pending_credential)
+        self.database_service.change_user_credentials(current_credential, pending_credential.password)
         # database and proxy user credentials have to be in sync as the proxy user is used to connect to the database
         if proxy_secret_id is not None:
             self.password_service.set_credentials(secret_id, token, proxy_secret)
