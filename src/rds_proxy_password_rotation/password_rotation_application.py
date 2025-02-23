@@ -26,7 +26,7 @@ class PasswordRotationApplication:
 
         match step:
             case RotationStep.CREATE_SECRET:
-                self.__create_secret(secret_id, token)
+                self.__create_new_secret_version_if_no_pending_version_exists(secret_id, token)
             case RotationStep.SET_SECRET:
                 pass
             case RotationStep.TEST_SECRET:
@@ -38,7 +38,7 @@ class PasswordRotationApplication:
 
         return PasswordRotationResult.STEP_EXECUTED
 
-    def __create_secret(self, secret_id: str, token: str):
+    def __create_new_secret_version_if_no_pending_version_exists(self, secret_id: str, token: str):
         """
         Creates a new version of the secret with the password to rotate to unless a version tagged with AWSPENDING
         already exists.
