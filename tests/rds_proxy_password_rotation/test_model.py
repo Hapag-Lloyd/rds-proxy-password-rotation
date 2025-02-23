@@ -20,3 +20,29 @@ class TestDatabaseCredentials(TestCase):
         self.assertEqual(credentials.username, "admin")
         self.assertEqual(credentials.password, "admin")
         self.assertEqual(credentials.extra_field, "extra_value")
+
+    def test_should_throw_value_error_if_username_is_missing(self):
+        # Given
+        data = {
+            "password": "admin",
+        }
+
+        # When
+        with self.assertRaises(ValueError) as actualContext:
+            DatabaseCredentials.model_validate_json(json.dumps(data))
+
+        # Then
+        self.assertIn("username", str(actualContext.exception))
+
+    def test_should_throw_value_error_if_password_is_missing(self):
+        # Given
+        data = {
+            "username": "admin",
+        }
+
+        # When
+        with self.assertRaises(ValueError) as actualContext:
+            DatabaseCredentials.model_validate_json(json.dumps(data))
+
+        # Then
+        self.assertIn("password", str(actualContext.exception))
