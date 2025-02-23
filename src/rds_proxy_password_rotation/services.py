@@ -13,7 +13,7 @@ class PasswordService(ABC):
         pass
 
     @abstractmethod
-    def get_database_credential(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials:
+    def get_database_credential(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials | None:
         pass
 
     @abstractmethod

@@ -36,7 +36,7 @@ class AwsSecretsManagerService(PasswordService):
         else:
             return True
 
-    def get_database_credential(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials:
+    def get_database_credential(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials | None:
         stage_string = AwsSecretsManagerService.__get_stage_string(stage)
 
         try:
@@ -50,10 +50,8 @@ class AwsSecretsManagerService(PasswordService):
             self.logger.error(f"Failed to parse secret value for secret {secret_id} (stage: {stage_string}, token: {token})")
 
             raise e
-        except self.client.exceptions.ResourceNotFoundException as e:
-            self.logger.error(f"Failed to retrieve secret value for secret {secret_id} (stage: {stage_string}, token: {token})")
-
-            raise e
+        except self.client.exceptions.ResourceNotFoundException:
+            return None
 
     def set_new_pending_password(self, secret_id: str, token: str, credential: DatabaseCredentials):
         if token is None:
