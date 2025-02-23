@@ -70,10 +70,10 @@ class PasswordRotationApplication:
         Use '1' and '2' as suffixes to indicate multi-user rotation.
         """
 
-        if username.endswith('1'):
-            new_username = username[:len(username) - 1] + '2'
-        elif username.endswith('2'):
-            new_username = username[:len(username) - 1] + '1'
+        if username.endswith('_blue'):
+            new_username = username[:len(username) - len('blue')] + 'green'
+        elif username.endswith('green'):
+            new_username = username[:len(username) - len('green')] + 'blue'
         else:
             new_username = username
 
