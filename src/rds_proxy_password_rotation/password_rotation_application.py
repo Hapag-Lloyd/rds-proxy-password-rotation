@@ -44,6 +44,9 @@ class PasswordRotationApplication:
         already exists.
         """
 
+        if self.password_service.get_database_credential(secret_id, PasswordStage.PENDING, token):
+          return
+
         credentials_to_rotate = self.password_service.get_database_credential(secret_id, PasswordStage.CURRENT)
 
         current_username = credentials_to_rotate.username
@@ -54,10 +57,6 @@ class PasswordRotationApplication:
             # we rotate the previous user's password, so the current user is still valid
             credentials_to_rotate = self.password_service.get_database_credential(secret_id, PasswordStage.PREVIOUS)
 
-        pending_credentials = self.password_service.get_database_credential(secret_id, PasswordStage.PENDING, token)
-
-        if pending_credentials and pending_credentials.username == credentials_to_rotate['username']:
-            return
 
         self.password_service.set_new_pending_password(secret_id, token, credentials_to_rotate)
 
