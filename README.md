@@ -2,13 +2,22 @@
 
 :warning: **Work in progress** :warning:
 
-- implement step CREATE_SECRET
 - implement step SET_SECRET
 - implement step TEST_SECRET
 - implement step FINISH_SECRET
+- add docker image for AWS Lambda
 - add Terraform module
 
-Python script for multi-user password rotation using RDS and RDS proxy. It supports a separate credential for the application.
+Python script for multi-user password rotation using RDS and RDS proxy. It supports credentials for the application and the RDS
+proxy.
+
+We implemented this logic again, because current implementations
+
+- have no tests
+- have no release process
+- are not published to PyPI
+- have no Docker image available
+- have no Terraform module available
 
 ## Pre-requisites
 
