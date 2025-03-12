@@ -1,8 +1,8 @@
 from uuid import uuid4
 
 from aws_lambda_powertools import Logger
+from cachetools import cached, LRUCache
 from mypy_boto3_secretsmanager.client import SecretsManagerClient
-from mypy_boto3_secretsmanager.type_defs import DescribeSecretResponseTypeDef
 from pydantic import ValidationError
 
 from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials, Credentials
@@ -73,7 +73,6 @@ class AwsSecretsManagerService(PasswordService):
 
         return None
 
-
     def set_new_pending_password(self, secret_id: str, token: str, credential: DatabaseCredentials):
         if token is None:
             token = str(uuid4())
@@ -100,6 +99,7 @@ class AwsSecretsManagerService(PasswordService):
 
         self.logger.info(f'credentials modified: {secret_id} and version {token}')
 
+    @cached(cache=LRUCache(maxsize=20))
     def __get_secret_metadata(self, secret_id: str) -> DescribeSecretResponseTypeDef:
         return self.client.describe_secret(SecretId=secret_id)
 

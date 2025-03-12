@@ -75,6 +75,9 @@ class PasswordRotationApplication:
         already exists.
         """
 
+        if self.password_service.get_database_credential(secret_id, PasswordStage.PENDING, token):
+            return
+
         credentials_to_rotate = self.password_service.get_database_credentials(secret_id, PasswordStage.CURRENT)
 
         current_username = credentials_to_rotate.username

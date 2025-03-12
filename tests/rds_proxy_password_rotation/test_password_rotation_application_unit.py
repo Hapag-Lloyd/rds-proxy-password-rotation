@@ -36,5 +36,3 @@ class TestPasswordRotationApplication(TestCase):
 
         # Then
         logger.warning.assert_called()
-
-
