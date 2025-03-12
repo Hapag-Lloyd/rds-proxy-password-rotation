@@ -23,8 +23,8 @@ services:
       -c ssl_cert_file=/certs/server.crt
       -c ssl_key_file=/certs/server.key
     build:
-     context: ./postgresql-config
-     dockerfile: Dockerfile
+      context: ./postgresql-config
+      dockerfile: Dockerfile
     ports:
       - "5432:5432"
     volumes:

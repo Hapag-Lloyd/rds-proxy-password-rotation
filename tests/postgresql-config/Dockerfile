@@ -1,8 +1,10 @@
-FROM postgres:13-alpine
+FROM postgres:16-alpine
 
-RUN apk add --no-cache openssl
+# renovate: datasource=repology depName=openssl
+ARG OPENSSL_VERSION=3.3.3-r0
 
-RUN mkdir /certs
+RUN apk add --no-cache openssl=$OPENSSL_VERSION && \
+    mkdir /certs
 
 WORKDIR /certs
 

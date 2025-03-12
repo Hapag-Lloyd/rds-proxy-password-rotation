@@ -5,12 +5,17 @@ awsprevious
 boto
 cachetools
 classmethod
+extfile
+initdb
+keyout
 localstack
 maxsize
 mypy
+nosuperuser
 powertools
 psycopg
 pydantic
 pytest
 rotation
+signkey
 staticmethod
