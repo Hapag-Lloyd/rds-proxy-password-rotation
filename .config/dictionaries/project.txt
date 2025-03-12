@@ -5,6 +5,7 @@ awsprevious
 boto
 cachetools
 classmethod
+datasource
 extfile
 initdb
 keyout
@@ -16,6 +17,7 @@ powertools
 psycopg
 pydantic
 pytest
+repology
 rotation
 signkey
 staticmethod
