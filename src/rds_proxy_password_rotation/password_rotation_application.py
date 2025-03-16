@@ -48,7 +48,7 @@ class PasswordRotationApplication:
             previous_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.PREVIOUS)
 
             if pending_credential.username != previous_credential.username:
-                raise ValueError('pending and previous have different usernames for secret {secret_id}')
+                raise ValueError(f'pending and previous have different usernames for secret {secret_id}')
         else:
             if pending_credential.username != current_credential.username:
                 raise ValueError(f'pending and current have different usernames for secret {secret_id}')
@@ -63,6 +63,7 @@ class PasswordRotationApplication:
                 break
 
         self.database_service.change_user_credentials(current_credential, pending_credential.password)
+
         # database and proxy user credentials have to be in sync as the proxy user is used to connect to the database
         if proxy_secret_id is not None:
             self.password_service.set_credentials(secret_id, token, proxy_secret)
