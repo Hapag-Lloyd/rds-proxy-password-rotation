@@ -23,7 +23,7 @@ class PostgreSqlDatabaseService(DatabaseService):
     def __get_connection(self, credentials: DatabaseCredentials) -> Connection | None:
         connect_string = (f'dbname={credentials.database_name} sslmode=require port={credentials.database_port}'
                           f' user={credentials.username} host={credentials.database_host}'
-                          f' password={credentials.password}')
+                          f' password={credentials.password} connect_timeout=5')
 
         try:
             return psycopg.connect(connect_string)

@@ -32,6 +32,15 @@ class TestAwsSecretsManagerService(TestCase):
 
         self.__get_connection(new_credentials).close()
 
+    def test_should_raise_exception_when_change_user_credentials_given_user_does_not_exist(self):
+        # Given
+        old_credentials = self.root_credentials.model_copy(update={'username': f'test_user_{uuid.uuid4()}_b', 'password': 'test_password'})
+        new_credentials = old_credentials.model_copy(update={'password': 'new_test_password'})
+
+        # When
+        with self.assertRaises(psycopg.OperationalError):
+            self.service.change_user_credentials(old_credentials, new_credentials.password)
+
     def __get_connection(self, credentials: DatabaseCredentials) -> Connection:
         connect_string = (f'dbname={credentials.database_name} sslmode=require port={credentials.database_port}'
                           f' user={credentials.username} host={credentials.database_host}'
