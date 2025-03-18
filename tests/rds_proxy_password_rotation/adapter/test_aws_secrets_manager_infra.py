@@ -209,7 +209,7 @@ class TestAwsSecretsManagerService(TestCase):
 
         self.assertIsNotNone(secret)
 
-    def test_should_return_database_credentials_when_get_database_credential_given_secret_exists(self):
+    def test_should_return_database_credentials_when_get_database_credentials_given_secret_exists(self):
         # Given
 
         # When
@@ -220,7 +220,7 @@ class TestAwsSecretsManagerService(TestCase):
         self.assertEqual(result.username, 'admin')
         self.assertEqual(result.password, 'admin')
 
-    def test_should_throw_validation_exception_when_get_database_credential_given_missing_mandatory_fields(self):
+    def test_should_throw_validation_exception_when_get_database_credentials_given_missing_mandatory_fields(self):
         # Given
 
         # When
@@ -228,11 +228,40 @@ class TestAwsSecretsManagerService(TestCase):
             AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_database_credentials(
                 self.__secret_name_with_missing_fields, PasswordStage.CURRENT)
 
-    def test_should_return_null_when_get_database_credential_given_secret_does_not_exist(self):
+    def test_should_return_none_when_get_database_credentials_given_secret_does_not_exist(self):
         # Given
 
         # When
         result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_database_credentials(
+            'non_existing_secret', PasswordStage.CURRENT)
+
+        # Then
+        self.assertIsNone(result)
+
+    def test_should_return_user_credentials_when_get_user_credentials_given_secret_exists(self):
+        # Given
+
+        # When
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_user_credentials(
+            self.__secret_name_without_rotation, PasswordStage.CURRENT)
+
+        # Then
+        self.assertEqual(result.username, 'admin')
+        self.assertEqual(result.password, 'admin')
+
+    def test_should_throw_validation_exception_when_get_user_credentials_given_missing_mandatory_fields(self):
+        # Given
+
+        # When
+        with self.assertRaises(ValueError):
+            AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_user_credentials(
+                self.__secret_name_with_missing_fields, PasswordStage.CURRENT)
+
+    def test_should_return_none_when_get_user_credentials_given_secret_does_not_exist(self):
+        # Given
+
+        # When
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_user_credentials(
             'non_existing_secret', PasswordStage.CURRENT)
 
         # Then
