@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials, Credentials
+from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials, Credentials, RotationStep
 
 
 class PasswordService(ABC):

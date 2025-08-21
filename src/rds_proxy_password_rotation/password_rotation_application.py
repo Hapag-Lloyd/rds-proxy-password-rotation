@@ -22,7 +22,7 @@ class PasswordRotationApplication:
             self.logger.warning("Rotation is not enabled for the secret %s", secret_id)
             return PasswordRotationResult.NOTHING_TO_ROTATE
 
-        if not self.password_service.ensure_valid_secret_state(secret_id, token):
+        if step != RotationStep.CREATE_SECRET and not self.password_service.ensure_valid_secret_state(secret_id, token):
             return PasswordRotationResult.NOTHING_TO_ROTATE
 
         match step:
@@ -76,7 +76,9 @@ class PasswordRotationApplication:
         already exists.
         """
 
-        if self.password_service.get_database_credential(secret_id, PasswordStage.PENDING, token):
+        pending_credentials = self.password_service.get_database_credentials(secret_id, PasswordStage.PENDING, token)
+
+        if pending_credentials is not None:
             return
 
         credentials_to_rotate = self.password_service.get_database_credentials(secret_id, PasswordStage.CURRENT)
@@ -87,11 +89,12 @@ class PasswordRotationApplication:
 
         if is_multi_user_rotation:
             # we rotate the previous user's password, so the current user is still valid
-            credentials_to_rotate = self.password_service.get_database_credentials(secret_id, PasswordStage.PREVIOUS)
+            previous_credentials = self.password_service.get_database_credentials(secret_id, PasswordStage.PREVIOUS)
 
-        pending_credentials = self.password_service.get_database_credentials(secret_id, PasswordStage.PENDING, token)
-
-        if pending_credentials and pending_credentials.username == credentials_to_rotate['username']:
-            return
+            if previous_credentials is None:
+                # there are no previous credentials, so we create new credentials for the new user based on the old one
+                credentials_to_rotate = credentials_to_rotate.copy_and_replace_username(new_username)
+            else:
+                credentials_to_rotate = previous_credentials
 
         self.password_service.set_new_pending_password(secret_id, token, credentials_to_rotate)

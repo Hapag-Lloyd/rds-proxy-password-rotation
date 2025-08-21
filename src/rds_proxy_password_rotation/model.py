@@ -21,7 +21,7 @@ class PasswordStage(Enum):
     PREVIOUS = "PREVIOUS"
 
 
-class Credentials(BaseModel, frozen=True, extra='allow'):
+class Credentials(BaseModel, extra='allow'):
     pass
 
 
@@ -36,3 +36,6 @@ class DatabaseCredentials(UserCredentials):
     database_name: str
 
     proxy_secret_ids: Optional[list[UserCredentials]] = None
+
+    def copy_and_replace_username(credentials: 'DatabaseCredentials', new_username: str) -> 'DatabaseCredentials':
+        return credentials.model_copy(update={'username': new_username})
