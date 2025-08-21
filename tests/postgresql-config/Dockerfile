@@ -1,9 +1,13 @@
 FROM postgres:16-alpine
 
+# keep the Renovate comments to update the image automatically
 # renovate: datasource=repology depName=openssl
 ARG OPENSSL_VERSION=3.3.3-r0
 
-RUN apk add --no-cache openssl=$OPENSSL_VERSION && \
+# don't pin the versions as Alpine supports only one single version
+# hadolint ignore=DL3018
+RUN apk add --no-cache \
+      openssl && \
     mkdir /certs
 
 WORKDIR /certs
