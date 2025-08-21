@@ -18,6 +18,9 @@ class TestAwsSecretsManagerService(TestCase):
     __secret_name_with_missing_fields = f'secret_with_missing_fields_{uuid.uuid4()}'
     __secret_name_with_additional_fields = f'secret_with_additional_fields_{uuid.uuid4()}'
 
+    __s3_bucket_name = f'my-bucket-{uuid.uuid4()}'
+    __function_name = f'rotation--{uuid.uuid4()}'
+
     __test_path = os.path.join(os.path.dirname(__file__), '..', '..')
 
     @classmethod
@@ -74,26 +77,26 @@ class TestAwsSecretsManagerService(TestCase):
         cls.s3_client = boto3.client('s3', endpoint_url='http://localhost:4566', aws_access_key_id='test',
                                      aws_secret_access_key='test', region_name='eu-central-1')
 
-        cls.s3_client.create_bucket(Bucket='s3bucket', CreateBucketConfiguration={'LocationConstraint': 'eu-central-1'})
-        cls.s3_client.upload_file(os.path.join(cls.__test_path, 'lambda_function.zip'), 's3bucket', 'function.zip')
+        cls.s3_client.create_bucket(Bucket=cls.__s3_bucket_name, CreateBucketConfiguration={'LocationConstraint': 'eu-central-1'})
+        cls.s3_client.upload_file(os.path.join(cls.__test_path, 'lambda_function.zip'), cls.__s3_bucket_name, 'function.zip')
 
         cls.lambda_client = boto3.client('lambda', endpoint_url='http://localhost:4566', aws_access_key_id='test',
                                          aws_secret_access_key='test', region_name='eu-central-1')
 
         rotation_function = cls.lambda_client.create_function(
             Code={
-                'S3Bucket': 's3bucket',
+                'S3Bucket': cls.__s3_bucket_name,
                 'S3Key': 'function.zip',
             },
             Description='Dummy function',
-            FunctionName='function_name',
+            FunctionName=cls.__function_name,
             Handler='lambda.handler',
             Publish=True,
             Role='arn:aws:iam::123456789012:role/lambda-role',
             Runtime='python3.10',
         )
         cls.lambda_client.add_permission(
-            FunctionName='function_name',
+            FunctionName=cls.__function_name,
             Action='lambda:InvokeFunction',
             StatementId='1',
             Principal='secretsmanager.amazonaws.com',
@@ -132,10 +135,10 @@ class TestAwsSecretsManagerService(TestCase):
             SecretId=cls.__secret_name_with_additional_fields,
         )
 
-        cls.lambda_client.delete_function(FunctionName='function_name')
+        cls.lambda_client.delete_function(FunctionName=cls.__function_name)
 
-        cls.s3_client.delete_object(Bucket='s3bucket', Key='function.zip')
-        cls.s3_client.delete_bucket(Bucket='s3bucket')
+        cls.s3_client.delete_object(Bucket=cls.__s3_bucket_name, Key='function.zip')
+        cls.s3_client.delete_bucket(Bucket=cls.__s3_bucket_name)
 
     def test_should_change_the_password_when_set_new_pending_password_given_secret_exists(self):
         # Given
