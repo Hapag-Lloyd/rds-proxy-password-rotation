@@ -104,7 +104,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
 
         # then
         self.assertEqual(actual_result, PasswordRotationResult.STEP_EXECUTED)
-        self.assertNotEquals(DatabaseCredentials.model_validate_json(actual_pending_value['SecretString']).password, given_current_value.password)
+        self.assertNotEqual(DatabaseCredentials.model_validate_json(actual_pending_value['SecretString']).password, given_current_value.password)
 
     def test_should_add_pending_credentials_when_rotate_secret_given_rotation_step_is_create_secret(self):
         # given
