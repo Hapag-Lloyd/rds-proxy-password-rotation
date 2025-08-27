@@ -222,4 +222,4 @@ class TestPasswordRotationApplicationInfra(TestCase):
                 SecretId=name,
                 SecretString=pending_value.model_dump_json(),
                 VersionStages=['AWSPENDING'], ClientRequestToken=token
-    )
+            )
