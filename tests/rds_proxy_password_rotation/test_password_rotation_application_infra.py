@@ -160,7 +160,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, given_pending_value)
-        print(TestPasswordRotationApplicationInfra.secretsmanager.describe_secret(SecretId=given_secret_name))
+
         # when / then
         with self.assertRaises(psycopg.OperationalError):
             given_application.rotate_secret(RotationStep.TEST_SECRET, given_secret_name, given_token)
@@ -174,7 +174,6 @@ class TestPasswordRotationApplicationInfra(TestCase):
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, given_pending_value)
-        print(TestPasswordRotationApplicationInfra.secretsmanager.describe_secret(SecretId=given_secret_name))
 
         # when / then
         with self.assertRaises(psycopg.OperationalError) as context:
@@ -201,9 +200,22 @@ class TestPasswordRotationApplicationInfra(TestCase):
                 VersionStages=['AWSPENDING'], ClientRequestToken=token
             )
 
+        rotation_function = cls.lambda_client.create_function(
+            Code={
+                'S3Bucket': cls.__s3_bucket_name,
+                'S3Key': 'function.zip',
+            },
+            Description='Dummy function',
+            FunctionName=cls.__function_name,
+            Handler='lambda.handler',
+            Publish=True,
+            Role='arn:aws:iam::123456789012:role/lambda-role',
+            Runtime='python3.10',
+        )
+
         cls.secretsmanager.rotate_secret(
             SecretId=secret['ARN'],
-            RotationLambdaARN=cls.rotation_function['FunctionArn'],
+            RotationLambdaARN=rotation_function['FunctionArn'],
             RotationRules={
                 'AutomaticallyAfterDays': 123,
                 'Duration': '3h',
