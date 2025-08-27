@@ -1,5 +1,3 @@
-import time
-
 import psycopg
 from aws_lambda_powertools import Logger
 from psycopg import Connection, sql
