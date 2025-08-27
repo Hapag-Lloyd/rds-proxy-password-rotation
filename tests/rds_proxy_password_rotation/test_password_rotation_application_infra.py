@@ -4,6 +4,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 import boto3
+import psycopg
 from aws_lambda_powertools import Logger
 
 from rds_proxy_password_rotation.adapter.aws_secrets_manager import AwsSecretsManagerService
@@ -47,7 +48,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
         cls.lambda_client = boto3.client('lambda', endpoint_url='http://localhost:4566', aws_access_key_id='test',
                                          aws_secret_access_key='test', region_name='eu-central-1')
 
-        rotation_function = cls.lambda_client.create_function(
+        cls.rotation_function = cls.lambda_client.create_function(
             Code={
                 'S3Bucket': cls.__s3_bucket_name,
                 'S3Key': 'function.zip',
@@ -76,7 +77,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
 
         cls.secretsmanager.rotate_secret(
             SecretId=secret['ARN'],
-            RotationLambdaARN=rotation_function['FunctionArn'],
+            RotationLambdaARN=cls.rotation_function['FunctionArn'],
             RotationRules={
                 'AutomaticallyAfterDays': 123,
                 'Duration': '3h',
@@ -90,16 +91,38 @@ class TestPasswordRotationApplicationInfra(TestCase):
 
     def test_should_create_new_password_when_rotate_secret_given_rotation_step_is_create_secret(self):
         # given
+        given_token = f'{uuid.uuid4()}'
+        given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
+        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
+        TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, None)
+
         # when
-        actual_result = given_application.rotate_secret(RotationStep.CREATE_SECRET, TestPasswordRotationApplicationInfra.__secret_name_with_rotation, f'{uuid.uuid4()}')
+        actual_result = given_application.rotate_secret(RotationStep.CREATE_SECRET, given_secret_name, given_token)
+        actual_pending_value = TestPasswordRotationApplicationInfra.secretsmanager.get_secret_value(SecretId=given_secret_name, VersionStage='AWSPENDING', VersionId=given_token)
 
         # then
-        assert actual_result == PasswordRotationResult.STEP_EXECUTED
+        self.assertEqual(actual_result, PasswordRotationResult.STEP_EXECUTED)
+        self.assertNotEquals(DatabaseCredentials.model_validate_json(actual_pending_value['SecretString']).password, given_current_value.password)
 
-    def test_should_make_new_password_current_when_rotate_secret_given_rotation_step_is_set_secret(self):
-        pass
+    def test_should_add_pending_credentials_when_rotate_secret_given_rotation_step_is_create_secret(self):
+        # given
+        given_token = f'{uuid.uuid4()}'
+        given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
+        given_current_value = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
+
+        TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, None)
+
+        # when
+        given_application.rotate_secret(RotationStep.CREATE_SECRET, given_secret_name, given_token)
+
+        # then
+        try:
+            TestPasswordRotationApplicationInfra.secretsmanager.get_secret_value(SecretId=given_secret_name, VersionStage='AWSPENDING', VersionId=given_token)
+        except TestPasswordRotationApplicationInfra.secretsmanager.exceptions.ResourceNotFoundException:
+            self.fail("AWSPENDING version not found for secret: {}".format(given_secret_name))
 
     def test_should_return_nothing_to_rotate_when_rotate_secret_given_rotation_step_is_finish_secret(self):
         # given
@@ -112,4 +135,77 @@ class TestPasswordRotationApplicationInfra(TestCase):
         assert actual_result == PasswordRotationResult.NOTHING_TO_ROTATE
 
     def test_should_use_another_username_when_rotate_secret_given_multi_user_rotation(self):
-        pass
+        # given
+        given_token = f'{uuid.uuid4()}'
+        given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
+        given_current_value = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
+
+        TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, None)
+
+        # when
+        actual_result = given_application.rotate_secret(RotationStep.CREATE_SECRET, given_secret_name, given_token)
+        actual_pending_value = TestPasswordRotationApplicationInfra.secretsmanager.get_secret_value(SecretId=given_secret_name, VersionStage='AWSPENDING', VersionId=given_token)
+
+        # then
+        self.assertEqual(actual_result, PasswordRotationResult.STEP_EXECUTED)
+        self.assertEqual(DatabaseCredentials.model_validate_json(actual_pending_value['SecretString']).username, "admin2")
+
+    def test_should_raise_exception_when_rotate_secret_given_user_credentials_are_invalid_in_test_secret(self):
+        # given
+        given_token = f'{uuid.uuid4()}'
+        given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
+        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
+
+        TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, given_pending_value)
+
+        # when / then
+        with self.assertRaises(psycopg.OperationalError):
+            given_application.rotate_secret(RotationStep.TEST_SECRET, given_secret_name, given_token)
+
+    def test_should_use_pending_credentials_for_connection_check_when_rotate_secret_given_step_is_test_secret(self):
+        # given
+        given_token = f'{uuid.uuid4()}'
+        given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
+        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
+
+        TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, given_pending_value)
+
+        # when / then
+        with self.assertRaises(psycopg.OperationalError) as context:
+            given_application.rotate_secret(RotationStep.TEST_SECRET, given_secret_name, given_token)
+
+        self.assertIn('failed for user "admin2"', str(context.exception))
+
+    @classmethod
+    def __create_secret(cls, name: str, current_value: DatabaseCredentials, token: str, pending_value: DatabaseCredentials):
+        secret = cls.secretsmanager.create_secret(
+            Name=name
+        )
+
+        cls.secretsmanager.put_secret_value(
+            SecretId=name,
+            SecretString=current_value.model_dump_json(),
+            VersionStages=['AWSCURRENT']
+        )
+
+        if pending_value:
+            cls.secretsmanager.put_secret_value(
+                SecretId=name,
+                SecretString=pending_value.model_dump_json(),
+                VersionStages=['AWSPENDING'], ClientRequestToken=token
+            )
+
+        cls.secretsmanager.rotate_secret(
+            SecretId=secret['ARN'],
+            RotationLambdaARN=cls.rotation_function['FunctionArn'],
+            RotationRules={
+                'AutomaticallyAfterDays': 123,
+                'Duration': '3h',
+                'ScheduleExpression': 'rate(10 days)'
+            }
+        )

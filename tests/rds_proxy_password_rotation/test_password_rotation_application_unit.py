@@ -36,3 +36,14 @@ class TestPasswordRotationApplication(TestCase):
 
         # Then
         logger.warning.assert_called()
+
+    def test_should_raise_exception_when_rotate_secret_given_invalid_rotation_step(self):
+        # given
+        secrets_manager = Mock(spec=PasswordService)
+        secrets_manager.is_rotation_enabled.return_value = True
+
+        application = PasswordRotationApplication(secrets_manager, Mock(spec=DatabaseService), logger = Mock(spec=Logger))
+
+        # when / then
+        with self.assertRaises(ValueError):
+            application.rotate_secret('invalid_step', 'secret', 'token')

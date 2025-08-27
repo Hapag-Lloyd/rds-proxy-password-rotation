@@ -31,13 +31,17 @@ class PasswordRotationApplication:
             case RotationStep.SET_SECRET:
                 self.__set_secret(secret_id, token)
             case RotationStep.TEST_SECRET:
-                pass
+                self.__test_secret(secret_id, token)
             case RotationStep.FINISH_SECRET:
                 pass
             case _:
                 raise ValueError(f"Invalid rotation step: {step}")
 
         return PasswordRotationResult.STEP_EXECUTED
+
+    def __test_secret(self, secret_id: str, token: str):
+        pending_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.PENDING, token)
+        self.database_service.test_user_credentials(pending_credential)
 
     def __set_secret(self, secret_id: str, token: str):
         pending_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.PENDING, token)

@@ -48,3 +48,7 @@ class DatabaseService(ABC):
     @abstractmethod
     def change_user_credentials(self, old_credentials: DatabaseCredentials, new_password: str):
         pass
+
+    @abstractmethod
+    def test_user_credentials(self, credentials: DatabaseCredentials):
+        pass
