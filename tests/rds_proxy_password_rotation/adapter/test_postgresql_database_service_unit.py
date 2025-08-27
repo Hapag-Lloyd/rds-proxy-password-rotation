@@ -30,7 +30,7 @@ class TestAwsSecretsManagerService(TestCase):
         # Then
         conn.close()
 
-        self.__get_connection(new_credentials).close()
+        TestAwsSecretsManagerService.__get_connection(new_credentials).close()
 
     def test_should_raise_exception_when_change_user_credentials_given_user_does_not_exist(self):
         # Given
@@ -41,14 +41,16 @@ class TestAwsSecretsManagerService(TestCase):
         with self.assertRaises(psycopg.OperationalError):
             self.service.change_user_credentials(old_credentials, new_credentials.password)
 
-    def __get_connection(self, credentials: DatabaseCredentials) -> Connection:
+    @staticmethod
+    def __get_connection(credentials: DatabaseCredentials) -> Connection:
         connect_string = (f'dbname={credentials.database_name} sslmode=require port={credentials.database_port}'
                           f' user={credentials.username} host={credentials.database_host}'
                           f' password={credentials.password}')
 
         return psycopg.connect(connect_string)
 
-    def __create_user(self, conn: Connection, credentials: UserCredentials):
+    @staticmethod
+    def __create_user(conn: Connection, credentials: UserCredentials):
         with conn.cursor() as cur:
             cur.execute(sql.SQL("CREATE USER {} WITH PASSWORD {}").format(sql.Identifier(credentials.username), credentials.password))
             cur.execute(sql.SQL("ALTER USER {} WITH NOSUPERUSER").format(sql.Identifier(credentials.username)))
