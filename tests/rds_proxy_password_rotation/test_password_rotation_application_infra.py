@@ -1,5 +1,6 @@
 import os
 import uuid
+import random
 from unittest import TestCase
 from unittest.mock import Mock
 
@@ -206,7 +207,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
                 'S3Key': 'function.zip',
             },
             Description='Dummy function',
-            FunctionName=cls.__function_name,
+            FunctionName=f'{cls.__function_name}_{random.randint(1, 999999999)}',
             Handler='lambda.handler',
             Publish=True,
             Role='arn:aws:iam::123456789012:role/lambda-role',
