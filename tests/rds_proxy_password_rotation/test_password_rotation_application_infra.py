@@ -83,6 +83,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
                 'Duration': '3h',
                 'ScheduleExpression': 'rate(10 days)'
             },
+            RotateImmediately=False
         )
 
     def setUp(self):
@@ -207,5 +208,6 @@ class TestPasswordRotationApplicationInfra(TestCase):
                 'AutomaticallyAfterDays': 123,
                 'Duration': '3h',
                 'ScheduleExpression': 'rate(10 days)'
-            }
+            },
+            RotateImmediately=False
         )
