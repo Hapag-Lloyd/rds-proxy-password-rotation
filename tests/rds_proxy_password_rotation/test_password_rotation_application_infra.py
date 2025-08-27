@@ -155,7 +155,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
     def test_should_raise_exception_when_rotate_secret_given_user_credentials_are_invalid_in_test_secret(self):
         # given
         given_token = f'{uuid.uuid4()}'
-        given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
+        given_secret_name = f'{uuid.uuid4()}-secret_with_rotation'
         given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
         given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
