@@ -174,6 +174,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, given_pending_value)
+        print(TestPasswordRotationApplicationInfra.secretsmanager.describe_secret(SecretId=given_secret_name))
 
         # when / then
         with self.assertRaises(psycopg.OperationalError) as context:
