@@ -16,26 +16,22 @@ class TestAwsSecretsManagerService(TestCase):
 
     def setUp(self):
         self.service = PostgreSqlDatabaseService(Mock(spec=Logger))
+        self.conn = self.service._get_connection(self.root_credentials)
 
-    @classmethod
-    def setUpClass(cls):
-        cls.conn = cls.__get_connection(cls.root_credentials)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.conn.close()
+    def tearDown(self):
+        self.conn.close()
 
     def test_should_update_username_and_password_when_change_user_credentials_given_user_exists(self):
         # Given
         old_credentials = self.root_credentials.model_copy(update={'username': f'test_user_{uuid.uuid4()}_a', 'password': 'test_password'})
         new_credentials = old_credentials.model_copy(update={'password': 'new_test_password'})
 
-        self.__create_user(TestAwsSecretsManagerService.conn, old_credentials)
+        self.__create_user(self.conn, old_credentials)
 
         # When
         self.service.change_user_credentials(old_credentials, new_credentials.password)
 
-        TestAwsSecretsManagerService.__get_connection(new_credentials).close()
+        self.service._get_connection(new_credentials)
 
     def test_should_raise_exception_when_change_user_credentials_given_user_does_not_exist(self):
         # Given
@@ -46,24 +42,29 @@ class TestAwsSecretsManagerService(TestCase):
         with self.assertRaises(psycopg.OperationalError):
             self.service.change_user_credentials(old_credentials, new_credentials.password)
 
-    def test_should_not_allow_sql_injection_when_change_user_credentials_given_invalid_characters(self):
+    def test_should_set_the_password_when_change_user_credentials_given_invalid_characters_in_password(self):
         # Given
         old_credentials = self.root_credentials.model_copy(update={'username': f'test_user_{uuid.uuid4()}_b', 'password': 'test_password'})
-        new_credentials = old_credentials.model_copy(update={'password': '"; DROP TABLE users; --'})
+        new_credentials = old_credentials.model_copy(update={'password': "xx'x c=s"})
 
-        self.__create_user(TestAwsSecretsManagerService.conn, old_credentials)
+        self.__create_user(self.conn, old_credentials)
 
         # When
-        with self.assertRaises(psycopg.ProgrammingError):
+        self.service.change_user_credentials(old_credentials, new_credentials.password)
+
+        with self.service._get_connection(new_credentials) as conn:
+            self.assertTrue(True)
+
+    def test_should_not_connect_to_the_database_when_change_user_credentials_given_invalid_characters_in_username(self):
+        # Given
+        old_credentials = self.root_credentials.model_copy(update={'username': f'test_user_{uuid.uuid4()}_b"; DROP TABLE users; --', 'password': 'test_password'})
+        new_credentials = old_credentials.model_copy(update={'password': 'new_test_password'})
+
+        # When
+        with self.assertRaises(psycopg.OperationalError) as context:
             self.service.change_user_credentials(old_credentials, new_credentials.password)
 
-    @staticmethod
-    def __get_connection(credentials: DatabaseCredentials) -> Connection:
-        connect_string = (f'dbname={credentials.database_name} sslmode=require port={credentials.database_port}'
-                          f' user={credentials.username} host={credentials.database_host}'
-                          f' password={credentials.password}')
-
-        return psycopg.connect(connect_string)
+        self.assertIn('password authentication failed for user', str(context.exception))
 
     @staticmethod
     def __create_user(conn: Connection, credentials: UserCredentials):

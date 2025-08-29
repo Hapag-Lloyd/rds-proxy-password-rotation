@@ -1,6 +1,6 @@
 import psycopg
 from aws_lambda_powertools import Logger
-from psycopg import Connection, sql
+from psycopg import Connection, sql, ClientCursor
 
 from rds_proxy_password_rotation.model import DatabaseCredentials
 from rds_proxy_password_rotation.services import DatabaseService
@@ -11,19 +11,18 @@ class PostgreSqlDatabaseService(DatabaseService):
         self.logger = logger
 
     def change_user_credentials(self, old_credentials: DatabaseCredentials, new_password: str):
-        conn = self.__get_connection(old_credentials)
-
-        try:
-            with conn.cursor() as cur:
-                cur.execute(sql.SQL("ALTER USER %s WITH PASSWORD %s"), [old_credentials.username, new_password])
+        with self._get_connection(old_credentials) as conn:
+            with ClientCursor(conn) as cur:
+                cur.execute(sql.SQL("ALTER USER {} WITH PASSWORD %s").format(sql.Identifier(old_credentials.username)), (new_password,))
                 conn.commit()
-        finally:
-            conn.close()
 
-    def __get_connection(self, credentials: DatabaseCredentials) -> Connection | None:
-        connect_string = (f'dbname={credentials.database_name} sslmode=require port={credentials.database_port}'
-                          f' user={credentials.username} host={credentials.database_host}'
-                          f' password={credentials.password} connect_timeout=5')
+    def _get_connection(self, credentials: DatabaseCredentials) -> Connection:
+        """
+        Method is protected to allow testing.
+        :param credentials: used to connect to the database
+        :return: the database connection
+        """
+        connect_string = psycopg._connection_info.make_conninfo("", password=credentials.password, user=credentials.username, host=credentials.database_host, port=credentials.database_port, dbname=credentials.database_name, sslmode="require", connect_timeout=5)
 
         try:
             return psycopg.connect(connect_string)
