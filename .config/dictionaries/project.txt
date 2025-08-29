@@ -5,6 +5,7 @@ awsprevious
 boto
 cachetools
 classmethod
+conninfo
 datasource
 extfile
 initdb

@@ -52,7 +52,7 @@ class TestAwsSecretsManagerService(TestCase):
         # When
         self.service.change_user_credentials(old_credentials, new_credentials.password)
 
-        with self.service._get_connection(new_credentials) as conn:
+        with self.service._get_connection(new_credentials):
             self.assertTrue(True)
 
     def test_should_not_connect_to_the_database_when_change_user_credentials_given_invalid_characters_in_username(self):
