@@ -112,7 +112,7 @@ class AwsSecretsManagerService(PasswordService):
 
     def is_multi_user_rotation(self, secret_id: str) -> bool:
         secret = self.client.get_secret_value(SecretId=secret_id, VersionStage='AWSCURRENT')
-        print(secret)
+
         current_username = DatabaseCredentials.model_validate_json(secret['SecretString']).username
         other_username = self.get_other_username(current_username)
 
