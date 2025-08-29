@@ -15,7 +15,7 @@ class PostgreSqlDatabaseService(DatabaseService):
 
         try:
             with conn.cursor() as cur:
-                cur.execute(sql.SQL("ALTER USER {} WITH PASSWORD {}").format(sql.Identifier(old_credentials.username), new_password))
+                cur.execute(sql.SQL("ALTER USER %s WITH PASSWORD %s"), [old_credentials.username, new_password])
                 conn.commit()
         finally:
             conn.close()

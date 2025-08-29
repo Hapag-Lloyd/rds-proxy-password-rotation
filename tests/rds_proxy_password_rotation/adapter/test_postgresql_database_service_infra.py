@@ -11,24 +11,29 @@ from rds_proxy_password_rotation.model import UserCredentials, DatabaseCredentia
 
 
 class TestAwsSecretsManagerService(TestCase):
+    conn = None
     root_credentials = DatabaseCredentials(username='postgres', password='postgres', database_host='localhost', database_port=5432, database_name='postgres')
 
     def setUp(self):
         self.service = PostgreSqlDatabaseService(Mock(spec=Logger))
+
+    @classmethod
+    def setUpClass(cls):
+        cls.conn = cls.__get_connection(cls.root_credentials)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
 
     def test_should_update_username_and_password_when_change_user_credentials_given_user_exists(self):
         # Given
         old_credentials = self.root_credentials.model_copy(update={'username': f'test_user_{uuid.uuid4()}_a', 'password': 'test_password'})
         new_credentials = old_credentials.model_copy(update={'password': 'new_test_password'})
 
-        conn = self.__get_connection(self.root_credentials)
-        self.__create_user(conn, old_credentials)
+        self.__create_user(TestAwsSecretsManagerService.conn, old_credentials)
 
         # When
         self.service.change_user_credentials(old_credentials, new_credentials.password)
-
-        # Then
-        conn.close()
 
         TestAwsSecretsManagerService.__get_connection(new_credentials).close()
 
@@ -39,6 +44,17 @@ class TestAwsSecretsManagerService(TestCase):
 
         # When
         with self.assertRaises(psycopg.OperationalError):
+            self.service.change_user_credentials(old_credentials, new_credentials.password)
+
+    def test_should_not_allow_sql_injection_when_change_user_credentials_given_invalid_characters(self):
+        # Given
+        old_credentials = self.root_credentials.model_copy(update={'username': f'test_user_{uuid.uuid4()}_b', 'password': 'test_password'})
+        new_credentials = old_credentials.model_copy(update={'password': '"; DROP TABLE users; --'})
+
+        self.__create_user(TestAwsSecretsManagerService.conn, old_credentials)
+
+        # When
+        with self.assertRaises(psycopg.ProgrammingError):
             self.service.change_user_credentials(old_credentials, new_credentials.password)
 
     @staticmethod
