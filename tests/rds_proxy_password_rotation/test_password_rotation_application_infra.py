@@ -1,11 +1,12 @@
 import os
 import uuid
-import random
+
 from unittest import TestCase
 from unittest.mock import Mock
 
 import boto3
 import psycopg
+
 from aws_lambda_powertools import Logger
 
 from rds_proxy_password_rotation.adapter.aws_secrets_manager import AwsSecretsManagerService
@@ -124,6 +125,9 @@ class TestPasswordRotationApplicationInfra(TestCase):
             TestPasswordRotationApplicationInfra.secretsmanager.get_secret_value(SecretId=given_secret_name, VersionStage='AWSPENDING', VersionId=given_token)
         except TestPasswordRotationApplicationInfra.secretsmanager.exceptions.ResourceNotFoundException:
             self.fail("AWSPENDING version not found for secret: {}".format(given_secret_name))
+
+    def test_should_make_new_password_current_when_rotate_secret_given_rotation_step_is_set_secret(self):
+        pass
 
     def test_should_return_nothing_to_rotate_when_rotate_secret_given_rotation_step_is_finish_secret(self):
         # given
