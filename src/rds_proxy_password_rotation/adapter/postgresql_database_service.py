@@ -10,6 +10,13 @@ class PostgreSqlDatabaseService(DatabaseService):
     def __init__(self, logger: Logger):
         self.logger = logger
 
+    def test_user_credentials(self, credentials: DatabaseCredentials) -> bool:
+        with self._get_connection(credentials) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+
+                return True
+
     def change_user_credentials(self, old_credentials: DatabaseCredentials, new_password: str):
         with self._get_connection(old_credentials) as conn:
             with ClientCursor(conn) as cur:
