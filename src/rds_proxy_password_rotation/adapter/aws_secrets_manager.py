@@ -1,12 +1,11 @@
 from uuid import uuid4
 
 from aws_lambda_powertools import Logger
-from cachetools import cached, LRUCache
 from mypy_boto3_secretsmanager.client import SecretsManagerClient
 from mypy_boto3_secretsmanager.type_defs import DescribeSecretResponseTypeDef
 from pydantic import ValidationError
 
-from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage
+from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials, Credentials
 from rds_proxy_password_rotation.services import PasswordService
 
 
@@ -36,22 +35,39 @@ class AwsSecretsManagerService(PasswordService):
         else:
             return True
 
-    def get_database_credential(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials | None:
-        stage_string = AwsSecretsManagerService.__get_stage_string(stage)
-
+    def get_database_credentials(self, secret_id: str, stage: PasswordStage, token: str = None) -> DatabaseCredentials | None:
         try:
-            if token is None:
-                secret = self.client.get_secret_value(SecretId=secret_id, VersionStage=stage_string)
-            else:
-                secret = self.client.get_secret_value(SecretId=secret_id, VersionId=token, VersionStage=stage_string)
-
-            return DatabaseCredentials.model_validate_json(secret['SecretString'])
+            return DatabaseCredentials.model_validate_json(self.__get_secret_value(secret_id, stage, token))
         except ValidationError as e:
-            self.logger.error(f"Failed to parse secret value for secret {secret_id} (stage: {stage_string}, token: {token})")
+            self.logger.error(f"Failed to parse secret value for secret {secret_id} (stage: {stage.name}, token: {token})")
 
             raise e
         except self.client.exceptions.ResourceNotFoundException:
-            return None
+            self.logger.error(f"Failed to retrieve secret value for secret {secret_id} (stage: {stage.name}, token: {token})")
+
+        return None
+
+    def get_user_credentials(self, secret_id: str, stage: PasswordStage, token: str = None) -> UserCredentials | None:
+        try:
+            return UserCredentials.model_validate_json(self.__get_secret_value(secret_id, stage, token))
+        except ValidationError as e:
+            self.logger.error(f"Failed to parse secret value for secret {secret_id} (stage: {stage.name}, token: {token})")
+
+            raise e
+        except self.client.exceptions.ResourceNotFoundException:
+            self.logger.error(f"Failed to retrieve secret value for secret {secret_id} (stage: {stage.name}, token: {token})")
+
+        return None
+
+    def __get_secret_value(self, secret_id: str, stage: PasswordStage, token: str) -> str:
+        stage_string = AwsSecretsManagerService.__get_stage_string(stage)
+
+        if token is None:
+            secret = self.client.get_secret_value(SecretId=secret_id, VersionStage=stage_string)
+        else:
+            secret = self.client.get_secret_value(SecretId=secret_id, VersionId=token, VersionStage=stage_string)
+
+        return secret['SecretString']
 
     def set_new_pending_password(self, secret_id: str, token: str, credential: DatabaseCredentials):
         if token is None:
@@ -67,7 +83,18 @@ class AwsSecretsManagerService(PasswordService):
 
         self.logger.info(f'new pending secret created: {secret_id} and version {token}')
 
-    @cached(cache=LRUCache(maxsize=20))
+    def set_credentials(self, secret_id: str, token: str, credentials: Credentials):
+        if token is None:
+            token = str(uuid4())
+
+        self.client.put_secret_value(
+            SecretId=secret_id,
+            ClientRequestToken=token,
+            SecretString=credentials.model_dump_json(),
+            VersionStages=[AwsSecretsManagerService.__get_stage_string(PasswordStage.CURRENT)])
+
+        self.logger.info(f'credentials modified: {secret_id} and version {token}')
+
     def __get_secret_metadata(self, secret_id: str) -> DescribeSecretResponseTypeDef:
         return self.client.describe_secret(SecretId=secret_id)
 
@@ -82,3 +109,21 @@ class AwsSecretsManagerService(PasswordService):
                 return "AWSPREVIOUS"
             case _:
                 raise ValueError(f"Invalid stage: {stage}")
+
+    def is_multi_user_rotation(self, secret_id: str) -> bool:
+        secret = self.client.get_secret_value(SecretId=secret_id, VersionStage='AWSCURRENT')
+
+        current_username = DatabaseCredentials.model_validate_json(secret['SecretString']).username
+        other_username = self.get_other_username(current_username)
+
+        return current_username != other_username
+
+    def get_other_username(self, username: str) -> str:
+        if username.endswith('1'):
+            new_username = username[:len(username) - 1] + '2'
+        elif username.endswith('2'):
+            new_username = username[:len(username) - 1] + '1'
+        else:
+            new_username = username
+
+        return new_username

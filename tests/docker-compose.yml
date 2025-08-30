@@ -2,7 +2,6 @@
 # https://qxf2.com/blog/testing-aws-lambda-locally-using-localstack-and-pytest/
 services:
   localstack:
-    container_name: "${LOCALSTACK_DOCKER_NAME:-localstack-main}"
     image: localstack/localstack:4.0.3
     ports:
       - "127.0.0.1:4566:4566"
@@ -15,3 +14,23 @@ services:
       - PERSISTENCE=${PERSISTENCE:-0}
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+
+  postgres:
+    image: localhost/postgres-ssl
+    container_name: postgres
+    command: >
+      -c ssl=on
+      -c ssl_cert_file=/certs/server.crt
+      -c ssl_key_file=/certs/server.key
+    build:
+      context: ./postgresql-config
+      dockerfile: Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgresql-config/init-sql:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: password

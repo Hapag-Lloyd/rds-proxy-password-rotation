@@ -1,6 +1,7 @@
 from enum import Enum
 
 from pydantic import BaseModel
+from typing_extensions import Optional
 
 
 class RotationStep(Enum):
@@ -20,7 +21,21 @@ class PasswordStage(Enum):
     PREVIOUS = "PREVIOUS"
 
 
-class DatabaseCredentials(BaseModel, frozen=True, extra='allow'):
+class Credentials(BaseModel, extra='allow'):
+    pass
+
+
+class UserCredentials(Credentials):
     username: str
     password: str
 
+
+class DatabaseCredentials(UserCredentials):
+    database_host: str
+    database_port: int
+    database_name: str
+
+    proxy_secret_ids: Optional[list[UserCredentials]] = None
+
+    def copy_and_replace_username(credentials: 'DatabaseCredentials', new_username: str) -> 'DatabaseCredentials':
+        return credentials.model_copy(update={'username': new_username})
