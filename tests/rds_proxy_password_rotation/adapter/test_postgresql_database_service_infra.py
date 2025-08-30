@@ -12,6 +12,7 @@ from rds_proxy_password_rotation.model import UserCredentials, DatabaseCredentia
 
 class TestAwsSecretsManagerService(TestCase):
     conn = None
+    service = PostgreSqlDatabaseService(Mock(spec=Logger))
     root_credentials = DatabaseCredentials(username='postgres', password='postgres', database_host='localhost', database_port=5432, database_name='postgres')
 
     def setUp(self):
@@ -75,8 +76,7 @@ class TestAwsSecretsManagerService(TestCase):
         credentials = self.root_credentials.model_copy(update={'username': f'test_user_{uuid.uuid4()}_d', 'password': 'test_password'})
         self.created_users.append(credentials.username)
 
-        with self.__get_connection(self.root_credentials) as conn:
-            self.__create_user(conn, credentials)
+        self.__create_user(self.conn, credentials)
 
         # When
         result = self.service.test_user_credentials(credentials)
@@ -94,8 +94,11 @@ class TestAwsSecretsManagerService(TestCase):
         # When
         self.service.change_user_credentials(old_credentials, new_credentials.password)
 
+        successfully_connected = False
         with self.service._get_connection(new_credentials):
-            self.assertTrue(True)
+            successfully_connected = True
+
+        self.assertTrue(successfully_connected)
 
     def test_should_not_connect_to_the_database_when_change_user_credentials_given_invalid_characters_in_username(self):
         # Given
