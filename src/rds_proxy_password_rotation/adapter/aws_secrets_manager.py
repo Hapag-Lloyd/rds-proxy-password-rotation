@@ -19,6 +19,48 @@ class AwsSecretsManagerService(PasswordService):
 
         return 'RotationEnabled' in metadata and metadata['RotationEnabled']
 
+    def make_new_credentials_current(self, secret_id: str, token: str):
+        metadata = self.__get_secret_metadata(secret_id)
+        versions = metadata['VersionIdsToStages']
+
+        current_version = None
+        previous_version = None
+
+        for version, stages in versions.items():
+            if "AWSCURRENT" in stages:
+                if version == token:
+                    self.logger.info(f'current secret is already the pending one: {secret_id} and version {version}')
+                    return
+
+                current_version = version
+            elif "AWSPREVIOUS" in stages:
+                previous_version = version
+
+        if previous_version is not None:
+            self.client.update_secret_version_stage(
+                SecretId=secret_id,
+                VersionStage="AWSPREVIOUS",
+                MoveToVersionId=current_version,
+                RemoveFromVersionId=previous_version
+            )
+        else:
+            self.client.update_secret_version_stage(
+                SecretId=secret_id,
+                VersionStage="AWSPREVIOUS",
+                MoveToVersionId=current_version
+            )
+
+        self.client.update_secret_version_stage(
+            SecretId=secret_id,
+            VersionStage='AWSCURRENT',
+            MoveToVersionId=token,
+            RemoveFromVersionId=current_version)
+
+        self.client.update_secret_version_stage(
+            SecretId=secret_id,
+            VersionStage='AWSPENDING',
+            RemoveFromVersionId=token)
+
     def ensure_valid_secret_state(self, secret_id: str, token: str) -> bool:
         metadata = self.__get_secret_metadata(secret_id)
         versions = metadata['VersionIdsToStages']

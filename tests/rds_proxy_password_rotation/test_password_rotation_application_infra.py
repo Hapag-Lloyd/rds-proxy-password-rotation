@@ -187,6 +187,25 @@ class TestPasswordRotationApplicationInfra(TestCase):
 
         self.assertIn('failed for user "admin2"', str(context.exception))
 
+    def test_should_make_new_password_current_when_rotate_secret_given_step_is_finish_secret(self):
+        # given
+        given_token = f'{uuid.uuid4()}'
+        given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
+        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
+
+        TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, given_pending_value)
+
+        # when
+        actual_result = given_application.rotate_secret(RotationStep.FINISH_SECRET, given_secret_name, given_token)
+        actual_current_value = TestPasswordRotationApplicationInfra.secretsmanager.get_secret_value(SecretId=given_secret_name, VersionStage='AWSCURRENT')
+
+        # then
+        self.assertEqual(actual_result, PasswordRotationResult.STEP_EXECUTED)
+        self.assertEqual(DatabaseCredentials.model_validate_json(actual_current_value['SecretString']).username, given_pending_value.username)
+        self.assertEqual(DatabaseCredentials.model_validate_json(actual_current_value['SecretString']).password, given_pending_value.password)
+
     @classmethod
     def __create_secret(cls, name: str, current_value: DatabaseCredentials, token: str, pending_value: DatabaseCredentials):
         secret = cls.secretsmanager.create_secret(

@@ -43,6 +43,10 @@ class PasswordService(ABC):
         """
         pass
 
+    @abstractmethod
+    def make_new_credentials_current(self, secret_id: str, token: str):
+        pass
+
 
 class DatabaseService(ABC):
     @abstractmethod
