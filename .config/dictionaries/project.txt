@@ -22,3 +22,4 @@ repology
 rotation
 signkey
 staticmethod
+venv
