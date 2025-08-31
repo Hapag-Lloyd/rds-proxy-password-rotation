@@ -156,7 +156,7 @@ class TestAwsSecretsManagerService(TestCase):
 
         # When
         AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).set_new_pending_password(
-            self.__secret_name_with_additional_fields, token, "xxx", credentials)
+            self.__secret_name_with_additional_fields, token, credentials)
 
         # Then
         secret = self.secretsmanager.get_secret_value(SecretId=self.__secret_name_with_additional_fields, VersionStage='AWSPENDING', VersionId=token)
@@ -180,7 +180,7 @@ class TestAwsSecretsManagerService(TestCase):
 
         # When
         AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).set_new_pending_password(
-            self.__secret_name_with_additional_fields, token, "xxx", credentials)
+            self.__secret_name_with_additional_fields, token, credentials)
 
         # Then
         secret = self.secretsmanager.get_secret_value(SecretId=self.__secret_name_with_additional_fields, VersionStage='AWSPENDING', VersionId=token)
@@ -205,7 +205,7 @@ class TestAwsSecretsManagerService(TestCase):
 
         # When
         AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).set_new_pending_password(
-            self.__secret_name_without_rotation, token, "xxx", credentials)
+            self.__secret_name_without_rotation, token,credentials)
 
         # Then
         secret = self.secretsmanager.get_secret_value(SecretId=self.__secret_name_without_rotation, VersionStage='AWSPENDING', VersionId=token)
