@@ -77,6 +77,5 @@ class PasswordRotationApplication:
             return
 
         credentials_to_rotate = self.password_service.get_database_credentials(secret_id, PasswordStage.CURRENT)
-        new_username = self.password_service._get_next_username(credentials_to_rotate.username, credentials_to_rotate.rotation_usernames)
 
-        self.password_service.set_new_pending_password(secret_id, token, new_username, credentials_to_rotate)
+        self.password_service.set_new_pending_password(secret_id, token, credentials_to_rotate)

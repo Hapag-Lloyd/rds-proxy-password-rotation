@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 
 from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials, Credentials
 
