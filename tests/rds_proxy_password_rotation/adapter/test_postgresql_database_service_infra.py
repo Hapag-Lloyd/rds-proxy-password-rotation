@@ -7,13 +7,13 @@ from psycopg import Connection, sql
 from aws_lambda_powertools import Logger
 
 from rds_proxy_password_rotation.adapter.postgresql_database_service import PostgreSqlDatabaseService
-from rds_proxy_password_rotation.model import UserCredentials, DatabaseCredentials
+from rds_proxy_password_rotation.model import UserCredentials, DatabaseCredentials, PasswordType
 
 
 class TestAwsSecretsManagerService(TestCase):
     conn = None
     service = PostgreSqlDatabaseService(Mock(spec=Logger))
-    root_credentials = DatabaseCredentials(username='postgres', password='postgres', database_host='localhost', database_port=5432, database_name='postgres')
+    root_credentials = DatabaseCredentials(username='postgres', password='postgres', database_host='localhost', database_port=5432, database_name='postgres', rotation_type=PasswordType.RDS)
 
     def setUp(self):
         self.conn = self.service._get_connection(self.root_credentials)
