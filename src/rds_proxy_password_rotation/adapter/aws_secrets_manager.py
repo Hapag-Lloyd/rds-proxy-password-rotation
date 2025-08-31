@@ -153,11 +153,6 @@ class AwsSecretsManagerService(PasswordService):
             case _:
                 raise ValueError(f"Invalid stage: {stage}")
 
-    def is_multi_user_rotation(self, secret_id: str) -> bool:
-        secret = self.client.get_secret_value(SecretId=secret_id, VersionStage='AWSCURRENT')
-
-        return len(Credentials.model_validate_json(secret['SecretString']).rotation_usernames) > 1
-
     def get_next_username(self, current_username: str, usernames: List[str]) -> str:
         if not usernames:
             return current_username

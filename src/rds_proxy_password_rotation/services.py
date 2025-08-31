@@ -30,10 +30,6 @@ class PasswordService(ABC):
         pass
 
     @abstractmethod
-    def is_multi_user_rotation(self, secret_id: str) -> bool:
-        pass
-
-    @abstractmethod
     def get_next_username(self, current_username: str, usernames: List[str]) -> str:
         """
         :param username: The username to rotate.
