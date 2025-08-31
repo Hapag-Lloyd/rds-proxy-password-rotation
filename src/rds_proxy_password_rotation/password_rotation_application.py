@@ -49,16 +49,6 @@ class PasswordRotationApplication:
     def __set_secret(self, secret_id: str, token: str):
         pending_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.PENDING, token)
         current_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.CURRENT)
-        is_multi_user_rotation = self.password_service.is_multi_user_rotation(secret_id)
-
-        if is_multi_user_rotation:
-            previous_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.PREVIOUS)
-
-            if pending_credential.username != previous_credential.username:
-                raise ValueError(f'pending and previous have different usernames for secret {secret_id}')
-        else:
-            if pending_credential.username != current_credential.username:
-                raise ValueError(f'pending and current have different usernames for secret {secret_id}')
 
         proxy_secret_id = None
         proxy_secret = None

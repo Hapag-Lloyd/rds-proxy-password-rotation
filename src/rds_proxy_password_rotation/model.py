@@ -23,7 +23,7 @@ class PasswordStage(Enum):
 
 
 class PasswordType(Enum):
-    RDS = "RDS"
+    AWS_RDS = "AWS RDS"
 
 
 class Credentials(BaseModel, extra='allow'):
