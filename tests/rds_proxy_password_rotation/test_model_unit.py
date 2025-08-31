@@ -8,7 +8,7 @@ class TestCredentials(TestCase):
     def test_should_allow_extra_fields(self):
         # Given
         data = {
-            "rotation_type": "RDS",
+            "rotation_type": "AWS RDS",
             "rotation_usernames": ["admin", "readonly"],
             "extra_field": "extra_value"
         }
@@ -22,7 +22,7 @@ class TestCredentials(TestCase):
     def test_should_return_default_value_false_for_rotation_usernames(self):
         # Given
         data = {
-            "rotation_type": "RDS",
+            "rotation_type": "AWS RDS",
         }
 
         # When
@@ -41,6 +41,7 @@ class TestDatabaseCredentials(TestCase):
             "database_host": "localhost",
             "database_port": 5432,
             "database_name": "test",
+            "rotation_type": "AWS RDS",
             "extra_field": "extra_value"
         }
 
@@ -57,7 +58,7 @@ class TestUserCredentials(TestCase):
     def test_should_allow_extra_fields(self):
         # Given
         data = {
-            "rotation_type": "RDS",
+            "rotation_type": "AWS RDS",
             "username": "admin",
             "password": "admin",
             "extra_field": "extra_value"
