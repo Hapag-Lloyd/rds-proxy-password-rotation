@@ -35,6 +35,19 @@ class UserCredentials(Credentials):
     username: str
     password: str
 
+    def get_next_username(self) -> str:
+        if not self.rotation_usernames:
+            return self.username
+
+        # e.g. user1 -> user2, user2 -> user3, user3 -> user1, ...
+        if self.username not in self.rotation_usernames:
+            self.logger.warning(f'current username {self.username} not in rotation usernames {self.rotation_usernames}. Using the first username in the list as the new one.')
+            return self.rotation_usernames[0]
+
+        current_index = self.rotation_usernames.index(self.username)
+        next_index = (current_index + 1) % len(self.rotation_usernames)
+
+        return self.rotation_usernames[next_index]
 
 class DatabaseCredentials(UserCredentials):
     database_host: str

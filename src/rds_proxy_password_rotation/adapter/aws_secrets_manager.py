@@ -112,10 +112,11 @@ class AwsSecretsManagerService(PasswordService):
 
         return secret['SecretString']
 
-    def set_new_pending_password(self, secret_id: str, token: str, new_username: str, credential: DatabaseCredentials):
+    def set_new_pending_password(self, secret_id: str, token: str, credential: DatabaseCredentials):
         if token is None:
             token = str(uuid4())
 
+        new_username = credential.get_next_username()
         pending_credential = credential.model_copy(update={'username': new_username, 'password': self.client.get_random_password(ExcludeCharacters=':/@"\'\\')['RandomPassword']})
 
         self.client.put_secret_value(
@@ -152,17 +153,3 @@ class AwsSecretsManagerService(PasswordService):
                 return "AWSPREVIOUS"
             case _:
                 raise ValueError(f"Invalid stage: {stage}")
-
-    def get_next_username(self, current_username: str, usernames: List[str]) -> str:
-        if not usernames:
-            return current_username
-
-        # e.g. user1 -> user2, user2 -> user3, user3 -> user1, ...
-        if current_username not in usernames:
-            self.logger.warning(f'current username {current_username} not in rotation usernames {usernames}. Using the first username in the list as the new one.')
-            return usernames[0]
-
-        current_index = usernames.index(current_username)
-        next_index = (current_index + 1) % len(usernames)
-
-        return usernames[next_index]
