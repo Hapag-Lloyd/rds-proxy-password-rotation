@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel
 from typing_extensions import Optional
@@ -21,8 +22,13 @@ class PasswordStage(Enum):
     PREVIOUS = "PREVIOUS"
 
 
+class PasswordType(Enum):
+    RDS = "RDS"
+
+
 class Credentials(BaseModel, extra='allow'):
-    pass
+    rotation_type: PasswordType
+    rotation_usernames: Optional[List[str]] = []
 
 
 class UserCredentials(Credentials):

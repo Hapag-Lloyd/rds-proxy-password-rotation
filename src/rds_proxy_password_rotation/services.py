@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 from rds_proxy_password_rotation.model import DatabaseCredentials, PasswordStage, UserCredentials, Credentials
 
@@ -21,7 +22,7 @@ class PasswordService(ABC):
         pass
 
     @abstractmethod
-    def set_new_pending_password(self, secret_id: str, token: str, credential: DatabaseCredentials):
+    def set_new_pending_password(self, secret_id: str, token: str, new_username: str, credential: DatabaseCredentials):
         pass
 
     @abstractmethod
@@ -33,12 +34,10 @@ class PasswordService(ABC):
         pass
 
     @abstractmethod
-    def get_other_username(self, username: str) -> str:
+    def get_next_username(self, current_username: str, usernames: List[str]) -> str:
         """
-        Use '1' and '2' as suffixes for the username to indicate multi-user rotation.
-
         :param username: The username to rotate.
-        :return: Returns the other username in a multi-user rotation strategy based on the given username. For single-user rotation,
+        :return: Returns the next username in a multi-user rotation strategy based on the given username. For single-user rotation,
                  it returns the same username.
         """
         pass

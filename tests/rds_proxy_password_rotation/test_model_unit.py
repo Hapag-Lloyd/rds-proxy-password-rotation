@@ -1,7 +1,35 @@
 import json
 from unittest import TestCase
 
-from rds_proxy_password_rotation.model import DatabaseCredentials, UserCredentials
+from rds_proxy_password_rotation.model import DatabaseCredentials, UserCredentials, Credentials
+
+
+class TestCredentials(TestCase):
+    def test_should_allow_extra_fields(self):
+        # Given
+        data = {
+            "rotation_type": "RDS",
+            "rotation_usernames": ["admin", "readonly"],
+            "extra_field": "extra_value"
+        }
+
+        # When
+        credentials = Credentials.model_validate_json(json.dumps(data))
+
+        # Then
+        self.assertEqual(credentials.extra_field, "extra_value")
+
+    def test_should_return_default_value_false_for_rotation_usernames(self):
+        # Given
+        data = {
+            "rotation_type": "RDS",
+        }
+
+        # When
+        credentials = Credentials.model_validate_json(json.dumps(data))
+
+        # Then
+        self.assertEqual(credentials.rotation_usernames, [])
 
 
 class TestDatabaseCredentials(TestCase):
@@ -29,6 +57,7 @@ class TestUserCredentials(TestCase):
     def test_should_allow_extra_fields(self):
         # Given
         data = {
+            "rotation_type": "RDS",
             "username": "admin",
             "password": "admin",
             "extra_field": "extra_value"

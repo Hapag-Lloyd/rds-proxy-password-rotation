@@ -1,3 +1,4 @@
+from typing import List
 from uuid import uuid4
 
 from aws_lambda_powertools import Logger
@@ -111,11 +112,11 @@ class AwsSecretsManagerService(PasswordService):
 
         return secret['SecretString']
 
-    def set_new_pending_password(self, secret_id: str, token: str, credential: DatabaseCredentials):
+    def set_new_pending_password(self, secret_id: str, token: str, new_username: str, credential: DatabaseCredentials):
         if token is None:
             token = str(uuid4())
 
-        pending_credential = credential.model_copy(update={'password': self.client.get_random_password(ExcludeCharacters=':/@"\'\\')['RandomPassword']})
+        pending_credential = credential.model_copy(update={'username': new_username, 'password': self.client.get_random_password(ExcludeCharacters=':/@"\'\\')['RandomPassword']})
 
         self.client.put_secret_value(
                 SecretId=secret_id,
@@ -155,17 +156,18 @@ class AwsSecretsManagerService(PasswordService):
     def is_multi_user_rotation(self, secret_id: str) -> bool:
         secret = self.client.get_secret_value(SecretId=secret_id, VersionStage='AWSCURRENT')
 
-        current_username = DatabaseCredentials.model_validate_json(secret['SecretString']).username
-        other_username = self.get_other_username(current_username)
+        return len(Credentials.model_validate_json(secret['SecretString']).rotation_usernames) > 1
 
-        return current_username != other_username
+    def get_next_username(self, current_username: str, usernames: List[str]) -> str:
+        if not usernames:
+            return current_username
 
-    def get_other_username(self, username: str) -> str:
-        if username.endswith('1'):
-            new_username = username[:len(username) - 1] + '2'
-        elif username.endswith('2'):
-            new_username = username[:len(username) - 1] + '1'
-        else:
-            new_username = username
+        # e.g. user1 -> user2, user2 -> user3, user3 -> user1, ...
+        if current_username not in usernames:
+            self.logger.warning(f'current username {current_username} not in rotation usernames {usernames}. Using the first username in the list as the new one.')
+            return usernames[0]
 
-        return new_username
+        current_index = usernames.index(current_username)
+        next_index = (current_index + 1) % len(usernames)
+
+        return usernames[next_index]

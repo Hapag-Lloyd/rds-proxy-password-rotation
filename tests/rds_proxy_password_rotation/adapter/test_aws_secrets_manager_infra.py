@@ -292,7 +292,7 @@ class TestAwsSecretsManagerService(TestCase):
         # Given
 
         # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_other_username('user1')
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_next_username('user1')
 
         # Then
         self.assertEqual(result, 'user2')
@@ -301,7 +301,7 @@ class TestAwsSecretsManagerService(TestCase):
         # Given
 
         # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_other_username('user2')
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_next_username('user2')
 
         # Then
         self.assertEqual(result, 'user1')
@@ -310,7 +310,7 @@ class TestAwsSecretsManagerService(TestCase):
         # Given
 
         # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_other_username('user')
+        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_next_username('user')
 
         # Then
         self.assertEqual(result, 'user')
