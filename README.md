@@ -2,7 +2,6 @@
 
 :warning: **Work in progress** :warning:
 
-- implement step FINISH_SECRET
 - add docker image for AWS Lambda
 - add Terraform module
 

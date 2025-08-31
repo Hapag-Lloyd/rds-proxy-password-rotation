@@ -356,3 +356,140 @@ class TestAwsSecretsManagerService(TestCase):
 
         self.assertIsNotNone(secret)
         self.assertEqual(DatabaseCredentials.model_validate_json(secret['SecretString']).password, 'new_password')
+
+    def test_should_not_change_current_credentials_when_make_new_credentials_current_given_new_credentials_are_already_current(self):
+        # Given
+        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        pending_credentials = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        token = str(uuid.uuid4())
+        credential_name = str(uuid.uuid4())
+
+        self.secretsmanager.create_secret(
+            Name=credential_name
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=current_credentials.model_dump_json(),
+            ClientRequestToken=token
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=pending_credentials.model_dump_json(),
+            ClientRequestToken=str(uuid.uuid4()),
+            VersionStages=['AWSPENDING']
+        )
+
+        # When
+        AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).make_new_credentials_current(
+            credential_name, token)
+
+        # Then
+        secret = self.secretsmanager.get_secret_value(SecretId=credential_name, VersionStage='AWSCURRENT')
+
+        self.assertIsNotNone(secret)
+        self.assertEqual(DatabaseCredentials.model_validate_json(secret['SecretString']).password, 'admin')
+
+    def test_should_make_new_credentials_current_when_make_new_credentials_current_given_new_credentials_are_not_current(self):
+        # Given
+        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        pending_credentials = DatabaseCredentials(username='admin', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        token = str(uuid.uuid4())
+        credential_name = str(uuid.uuid4())
+
+        self.secretsmanager.create_secret(
+            Name=credential_name
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=current_credentials.model_dump_json(),
+            ClientRequestToken=str(uuid.uuid4())
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=pending_credentials.model_dump_json(),
+            ClientRequestToken=token,
+            VersionStages=['AWSPENDING']
+        )
+
+        # When
+        AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).make_new_credentials_current(
+            credential_name, token)
+
+        # Then
+        secret = self.secretsmanager.get_secret_value(SecretId=credential_name, VersionStage='AWSCURRENT')
+
+        self.assertIsNotNone(secret)
+        self.assertEqual(DatabaseCredentials.model_validate_json(secret['SecretString']).password, 'admin2')
+
+    def test_should_have_one_current_with_correct_token_when_make_new_credentials_current_given_rotation_takes_place(self):
+        # Given
+        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        pending_credentials = DatabaseCredentials(username='admin', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        token = str(uuid.uuid4())
+        credential_name = str(uuid.uuid4())
+
+        self.secretsmanager.create_secret(
+            Name=credential_name
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=current_credentials.model_dump_json(),
+            ClientRequestToken=str(uuid.uuid4())
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=pending_credentials.model_dump_json(),
+            ClientRequestToken=token,
+            VersionStages=['AWSPENDING']
+        )
+
+        # When
+        AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).make_new_credentials_current(
+            credential_name, token)
+
+        # Then
+        metadata = self.secretsmanager.describe_secret(SecretId=credential_name)
+        current_versions = [version for version, stages in metadata['VersionIdsToStages'].items() if 'AWSCURRENT' in stages]
+
+        self.assertEqual(len(current_versions), 1)
+        self.assertEqual(current_versions[0], token)
+
+    def test_should_have_one_previous_with_correct_token_when_make_new_credentials_current_given_rotation_takes_place(self):
+        # Given
+        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        pending_credentials = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        previous_credentials = DatabaseCredentials(username='adminPrev', password='adminPrev', database_host='localhost', database_port=5432, database_name='test')
+        token = str(uuid.uuid4())
+        credential_name = str(uuid.uuid4())
+
+        self.secretsmanager.create_secret(
+            Name=credential_name
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=current_credentials.model_dump_json(),
+            ClientRequestToken=str(uuid.uuid4())
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=pending_credentials.model_dump_json(),
+            ClientRequestToken=token,
+            VersionStages=['AWSPENDING']
+        )
+        self.secretsmanager.put_secret_value(
+            SecretId=credential_name,
+            SecretString=previous_credentials.model_dump_json(),
+            ClientRequestToken=str(uuid.uuid4()),
+            VersionStages=['AWSPREVIOUS']
+        )
+
+        # When
+        AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).make_new_credentials_current(
+            credential_name, token)
+
+        # Then
+        metadata = self.secretsmanager.describe_secret(SecretId=credential_name)
+        previous_versions = [version for version, stages in metadata['VersionIdsToStages'].items() if 'AWSPREVIOUS' in stages]
+
+        self.assertEqual(len(previous_versions), 1)
+        self.assertNotEqual(previous_versions[0], token)
