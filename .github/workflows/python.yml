@@ -11,13 +11,10 @@ name: Python build
 on: pull_request
 # yamllint enable rule:comments
 
-permissions:
-  contents: read
-
 jobs:
   default:
     # yamllint disable-line rule:line-length
-    uses: Hapag-Lloyd/Workflow-Templates/.github/workflows/python_python_callable.yml@7a25f9892f38ee19a3abff5f7e4696b54166d8e5 # 1.20.6
+    uses: Hapag-Lloyd/Workflow-Templates/.github/workflows/python_python_callable.yml@412356539ea6525b349518ae02d08909e547161d # 1.21.1
     secrets: inherit
     with:
       # type: string
@@ -28,3 +25,8 @@ jobs:
       # required: true
       # description: The Python versions to test. Usually a list of newer versions we support.
       python-versions: ${{ vars.PYTHON_VERSIONS }}
+      # type: string
+      # required: false
+      # description: "Name of the image. Usually it is sensible to set this to the repository name."
+      # default: ""
+      docker-image-name: ${{ github.event.repository.name }}
