@@ -1,4 +1,5 @@
 abstractmethod
+autouse
 awscurrent
 awspending
 awsprevious
@@ -17,3 +18,4 @@ pydantic
 repology
 signkey
 staticmethod
+venv

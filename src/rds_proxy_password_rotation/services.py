@@ -29,21 +29,6 @@ class PasswordService(ABC):
         pass
 
     @abstractmethod
-    def is_multi_user_rotation(self, secret_id: str) -> bool:
-        pass
-
-    @abstractmethod
-    def get_other_username(self, username: str) -> str:
-        """
-        Use '1' and '2' as suffixes for the username to indicate multi-user rotation.
-
-        :param username: The username to rotate.
-        :return: Returns the other username in a multi-user rotation strategy based on the given username. For single-user rotation,
-                 it returns the same username.
-        """
-        pass
-
-    @abstractmethod
     def make_new_credentials_current(self, secret_id: str, token: str):
         pass
 

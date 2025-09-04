@@ -12,7 +12,7 @@ from aws_lambda_powertools import Logger
 
 from rds_proxy_password_rotation.adapter.aws_secrets_manager import AwsSecretsManagerService
 from rds_proxy_password_rotation.adapter.postgresql_database_service import PostgreSqlDatabaseService
-from rds_proxy_password_rotation.model import DatabaseCredentials, RotationStep
+from rds_proxy_password_rotation.model import DatabaseCredentials, RotationStep, PasswordType
 from rds_proxy_password_rotation.password_rotation_application import PasswordRotationApplication, PasswordRotationResult
 
 
@@ -26,8 +26,8 @@ class TestPasswordRotationApplicationInfra(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        secret_value_without_rotation = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
-        secret_value_with_rotation = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        secret_value_without_rotation = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
+        secret_value_with_rotation = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
 
         cls.secretsmanager = boto3.client(service_name='secretsmanager', endpoint_url='http://localhost:4566', aws_access_key_id='test',
                                           aws_secret_access_key='test', region_name='eu-central-1')
@@ -96,7 +96,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
         # given
         given_token = f'{uuid.uuid4()}'
         given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
-        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, None)
@@ -113,7 +113,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
         # given
         given_token = f'{uuid.uuid4()}'
         given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
-        given_current_value = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        given_current_value = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, None)
@@ -144,7 +144,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
         # given
         given_token = f'{uuid.uuid4()}'
         given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
-        given_current_value = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        given_current_value = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS, rotation_usernames=['admin1', 'admin2'])
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, None)
@@ -161,8 +161,8 @@ class TestPasswordRotationApplicationInfra(TestCase):
         # given
         given_token = f'{uuid.uuid4()}'
         given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
-        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
-        given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
+        given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, given_pending_value)
@@ -175,8 +175,8 @@ class TestPasswordRotationApplicationInfra(TestCase):
         # given
         given_token = f'{uuid.uuid4()}'
         given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
-        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
-        given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
+        given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, given_pending_value)
@@ -191,8 +191,8 @@ class TestPasswordRotationApplicationInfra(TestCase):
         # given
         given_token = f'{uuid.uuid4()}'
         given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
-        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
-        given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        given_current_value = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
+        given_pending_value = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, given_pending_value)

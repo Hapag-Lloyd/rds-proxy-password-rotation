@@ -13,7 +13,7 @@ class Container(containers.DeclarativeContainer):
         Logger,
     )
 
-    boto3_secrets_manager = boto3.client(service_name='secretsmanager', region_name='eu-central-1')
+    boto3_secrets_manager = boto3.client(service_name='secretsmanager')
 
     secrets_manager = providers.Singleton(
         AwsSecretsManagerService,

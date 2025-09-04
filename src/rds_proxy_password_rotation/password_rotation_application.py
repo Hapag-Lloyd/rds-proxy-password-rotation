@@ -49,16 +49,6 @@ class PasswordRotationApplication:
     def __set_secret(self, secret_id: str, token: str):
         pending_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.PENDING, token)
         current_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.CURRENT)
-        is_multi_user_rotation = self.password_service.is_multi_user_rotation(secret_id)
-
-        if is_multi_user_rotation:
-            previous_credential = self.password_service.get_database_credentials(secret_id, PasswordStage.PREVIOUS)
-
-            if pending_credential.username != previous_credential.username:
-                raise ValueError(f'pending and previous have different usernames for secret {secret_id}')
-        else:
-            if pending_credential.username != current_credential.username:
-                raise ValueError(f'pending and current have different usernames for secret {secret_id}')
 
         proxy_secret_id = None
         proxy_secret = None
@@ -87,17 +77,5 @@ class PasswordRotationApplication:
             return
 
         credentials_to_rotate = self.password_service.get_database_credentials(secret_id, PasswordStage.CURRENT)
-
-        current_username = credentials_to_rotate.username
-        new_username = self.password_service.get_other_username(current_username)
-        is_multi_user_rotation = current_username != new_username
-
-        if is_multi_user_rotation:
-            # we rotate the previous user's password, so the current user is still valid
-            if self.password_service.get_database_credentials(secret_id, PasswordStage.PREVIOUS) is None:
-                # there are no previous credentials, so we create new credentials for the new user based on the old one
-                credentials_to_rotate = credentials_to_rotate.copy_and_replace_username(new_username)
-            else:
-                credentials_to_rotate = self.password_service.get_database_credentials(secret_id, PasswordStage.PREVIOUS)
 
         self.password_service.set_new_pending_password(secret_id, token, credentials_to_rotate)

@@ -1,7 +1,35 @@
 import json
 from unittest import TestCase
 
-from rds_proxy_password_rotation.model import DatabaseCredentials, UserCredentials
+from rds_proxy_password_rotation.model import DatabaseCredentials, UserCredentials, Credentials
+
+
+class TestCredentials(TestCase):
+    def test_should_allow_extra_fields(self):
+        # Given
+        data = {
+            "rotation_type": "AWS RDS",
+            "rotation_usernames": ["admin", "readonly"],
+            "extra_field": "extra_value"
+        }
+
+        # When
+        credentials = Credentials.model_validate_json(json.dumps(data))
+
+        # Then
+        self.assertEqual(credentials.extra_field, "extra_value")
+
+    def test_should_return_default_value_false_for_rotation_usernames(self):
+        # Given
+        data = {
+            "rotation_type": "AWS RDS",
+        }
+
+        # When
+        credentials = Credentials.model_validate_json(json.dumps(data))
+
+        # Then
+        self.assertEqual(credentials.rotation_usernames, [])
 
 
 class TestDatabaseCredentials(TestCase):
@@ -13,6 +41,7 @@ class TestDatabaseCredentials(TestCase):
             "database_host": "localhost",
             "database_port": 5432,
             "database_name": "test",
+            "rotation_type": "AWS RDS",
             "extra_field": "extra_value"
         }
 
@@ -29,6 +58,7 @@ class TestUserCredentials(TestCase):
     def test_should_allow_extra_fields(self):
         # Given
         data = {
+            "rotation_type": "AWS RDS",
             "username": "admin",
             "password": "admin",
             "extra_field": "extra_value"
@@ -67,3 +97,75 @@ class TestUserCredentials(TestCase):
 
         # Then
         self.assertIn("password", str(actualContext.exception))
+
+    def test_should_return_user2_when_get_next_username_given_user1_is_current(self):
+        # Given
+        data = {
+            "rotation_type": "AWS RDS",
+            "rotation_usernames": ["user1", "user2", "user3"],
+            "username": "user1",
+            "password": "admin",
+            "database_host": "localhost",
+            "database_port": 5432,
+            "database_name": "test"
+        }
+
+        # When
+        result = DatabaseCredentials.model_validate_json(json.dumps(data)).get_next_username()
+
+        # Then
+        self.assertEqual(result, 'user2')
+
+    def test_should_return_user1_when_get_next_username_given_user3_is_current(self):
+        # Given
+        data = {
+            "rotation_type": "AWS RDS",
+            "rotation_usernames": ["user1", "user2", "user3"],
+            "username": "user3",
+            "password": "admin",
+            "database_host": "localhost",
+            "database_port": 5432,
+            "database_name": "test"
+        }
+
+        # When
+        result = DatabaseCredentials.model_validate_json(json.dumps(data)).get_next_username()
+
+        # Then
+        self.assertEqual(result, 'user1')
+
+    def test_should_return_the_same_username_when_get_next_username_given_single_user_rotation(self):
+        # Given
+        data = {
+            "rotation_type": "AWS RDS",
+            "rotation_usernames": ["user3"],
+            "username": "user3",
+            "password": "admin",
+            "database_host": "localhost",
+            "database_port": 5432,
+            "database_name": "test"
+        }
+
+        # When
+        result = DatabaseCredentials.model_validate_json(json.dumps(data)).get_next_username()
+
+        # Then
+        self.assertEqual(result, 'user3')
+
+    def test_should_return_the_same_username_when_get_next_username_given_usernames_are_not_set(self):
+        # Given
+        data = {
+            "rotation_type": "AWS RDS",
+            "rotation_usernames": ["user3"],
+            "username": "user3",
+            "password": "admin",
+            "database_host": "localhost",
+            "database_port": 5432,
+            "database_name": "test"
+        }
+
+        # When
+        result = DatabaseCredentials.model_validate_json(json.dumps(data)).get_next_username()
+
+        # Then
+        self.assertEqual(result, 'user3')

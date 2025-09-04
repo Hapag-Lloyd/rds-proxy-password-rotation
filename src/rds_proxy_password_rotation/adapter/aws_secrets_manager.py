@@ -115,7 +115,8 @@ class AwsSecretsManagerService(PasswordService):
         if token is None:
             token = str(uuid4())
 
-        pending_credential = credential.model_copy(update={'password': self.client.get_random_password(ExcludeCharacters=':/@"\'\\')['RandomPassword']})
+        new_username = credential.get_next_username()
+        pending_credential = credential.model_copy(update={'username': new_username, 'password': self.client.get_random_password(ExcludeCharacters=':/@"\'\\')['RandomPassword']})
 
         self.client.put_secret_value(
                 SecretId=secret_id,
@@ -151,21 +152,3 @@ class AwsSecretsManagerService(PasswordService):
                 return "AWSPREVIOUS"
             case _:
                 raise ValueError(f"Invalid stage: {stage}")
-
-    def is_multi_user_rotation(self, secret_id: str) -> bool:
-        secret = self.client.get_secret_value(SecretId=secret_id, VersionStage='AWSCURRENT')
-
-        current_username = DatabaseCredentials.model_validate_json(secret['SecretString']).username
-        other_username = self.get_other_username(current_username)
-
-        return current_username != other_username
-
-    def get_other_username(self, username: str) -> str:
-        if username.endswith('1'):
-            new_username = username[:len(username) - 1] + '2'
-        elif username.endswith('2'):
-            new_username = username[:len(username) - 1] + '1'
-        else:
-            new_username = username
-
-        return new_username

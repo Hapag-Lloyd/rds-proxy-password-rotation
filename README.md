@@ -20,15 +20,25 @@ We implemented this logic again, because current implementations
 
 1. Python 3.10 or later
 2. For each db user:
-   1. Create a secret in AWS Secrets Manager with the following key-value pairs:
+   1. Clone the user in the database and grant the necessary permissions. We suggest to add a `-clone` suffix to the username.
+   2. Create a secret in AWS Secrets Manager with the following key-value pairs (for every user and its clone):
+      - `rotation_type`: "AWS RDS"
+      - `rotation_usernames`: Optional. The list of usernames that a part of the rotation, e.g. `["app_user", "app_user-clone"]`.
+         If not provided, `username` is used only.
+      - `proxy_secret_ids`: Optional. The list of ARNs of the secrets that are attached to the RDS Proxy, e.g.
+        `["arn:aws:secretsmanager:region:account-id:secret:secret-name"]`. If not provided, the proxy credentials are not adjusted.
+      - `database_host`: The hostname of the database
+      - `database_port`: The port of the database
+      - `database_name`: The name of the database
       - `username`: The username for the user
       - `password`: The password for the user
+
       This credential will be used by the application to connect to the proxy. You may add additional key-value pairs as needed.
-   2. Clone the user in the database and grant the necessary permissions. We suggest to add a `-clone` suffix to the username.
-   3. Create two secrets (for the original user and the clone) in AWS Secrets Manager with the following key-value pairs:
-     - `username`: The username for the user
-     - `password`: The password for the user
-   These credentials are used by the proxy to connect to the database. You may add additional key-value pairs as needed.
+3. If you are using RDS Proxy:
+   1. Create a secret in AWS Secrets Manager with the following key-value pairs:
+      - `username`: The username for the user that the proxy will use to connect to the database
+      - `password`: The password for the user that the proxy will use to connect to the database
+   2. Attach the secret to the RDS Proxy.
 
 ## Architecture
 

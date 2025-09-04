@@ -2,7 +2,10 @@
 
 *.egg-info
 __pycache__/
+venv/
 
 build/
+out/
 
 NUL
+junit/

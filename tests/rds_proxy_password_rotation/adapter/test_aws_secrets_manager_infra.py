@@ -9,7 +9,7 @@ import os
 from aws_lambda_powertools import Logger
 
 from rds_proxy_password_rotation.adapter.aws_secrets_manager import AwsSecretsManagerService
-from rds_proxy_password_rotation.model import PasswordStage, DatabaseCredentials
+from rds_proxy_password_rotation.model import PasswordStage, DatabaseCredentials, PasswordType
 
 
 class TestAwsSecretsManagerService(TestCase):
@@ -25,9 +25,9 @@ class TestAwsSecretsManagerService(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        secret_value_without_rotation = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        secret_value_without_rotation = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
 
-        secret_value_with_rotation = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        secret_value_with_rotation = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
 
         additional_fields_secret_value = {
             "username": "admin",
@@ -142,7 +142,7 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_change_the_password_when_set_new_pending_password_given_secret_exists(self):
         # Given
-        credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
@@ -166,7 +166,7 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_not_touch_additional_fields_when_set_new_pending_password_given_secret_exists(self):
         # Given
-        credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', some_field='some_value')
+        credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', some_field='some_value', rotation_type=PasswordType.AWS_RDS)
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
@@ -191,7 +191,7 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_set_new_pending_password_when_set_new_pending_password_given_secret_exists(self):
         # Given
-        credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
@@ -205,7 +205,7 @@ class TestAwsSecretsManagerService(TestCase):
 
         # When
         AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).set_new_pending_password(
-            self.__secret_name_without_rotation, token, credentials)
+            self.__secret_name_without_rotation, token,credentials)
 
         # Then
         secret = self.secretsmanager.get_secret_value(SecretId=self.__secret_name_without_rotation, VersionStage='AWSPENDING', VersionId=token)
@@ -288,54 +288,9 @@ class TestAwsSecretsManagerService(TestCase):
         # Then
         self.assertTrue(result)
 
-    def test_should_return_user_2_when_get_other_username_given_user_1_for_multi_user_rotation(self):
-        # Given
-
-        # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_other_username('user1')
-
-        # Then
-        self.assertEqual(result, 'user2')
-
-    def test_should_return_user_1_when_get_other_username_given_user_2_for_multi_user_rotation(self):
-        # Given
-
-        # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_other_username('user2')
-
-        # Then
-        self.assertEqual(result, 'user1')
-
-    def test_should_return_user_when_get_other_username_given_user_for_single_user_rotation(self):
-        # Given
-
-        # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).get_other_username('user')
-
-        # Then
-        self.assertEqual(result, 'user')
-
-    def test_should_return_false_when_is_multi_user_rotation_given_username_does_not_end_with_1_2(self):
-        # Given
-
-        # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).is_multi_user_rotation(self.__secret_name_without_rotation)
-
-        # Then
-        self.assertFalse(result)
-
-    def test_should_return_true_when_is_multi_user_rotation_given_username_ends_with_1_2(self):
-        # Given
-
-        # When
-        result = AwsSecretsManagerService(self.secretsmanager, Mock(spec=Logger)).is_multi_user_rotation(self.__secret_name_with_rotation)
-
-        # Then
-        self.assertTrue(result)
-
     def test_should_update_the_secret_when_set_credentials_given_secret_exists(self):
         # Given
-        credentials = DatabaseCredentials(username='xxx', password='admin', database_host='localhost', database_port=5432, database_name='test')
+        credentials = DatabaseCredentials(username='xxx', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
@@ -359,8 +314,8 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_not_change_current_credentials_when_make_new_credentials_current_given_new_credentials_are_already_current(self):
         # Given
-        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
-        pending_credentials = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
+        pending_credentials = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
@@ -391,8 +346,8 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_make_new_credentials_current_when_make_new_credentials_current_given_new_credentials_are_not_current(self):
         # Given
-        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
-        pending_credentials = DatabaseCredentials(username='admin', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
+        pending_credentials = DatabaseCredentials(username='admin', password='admin2', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
@@ -423,8 +378,8 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_have_one_current_with_correct_token_when_make_new_credentials_current_given_rotation_takes_place(self):
         # Given
-        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
-        pending_credentials = DatabaseCredentials(username='admin', password='admin2', database_host='localhost', database_port=5432, database_name='test')
+        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
+        pending_credentials = DatabaseCredentials(username='admin', password='admin2', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
@@ -456,9 +411,9 @@ class TestAwsSecretsManagerService(TestCase):
 
     def test_should_have_one_previous_with_correct_token_when_make_new_credentials_current_given_rotation_takes_place(self):
         # Given
-        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test')
-        pending_credentials = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test')
-        previous_credentials = DatabaseCredentials(username='adminPrev', password='adminPrev', database_host='localhost', database_port=5432, database_name='test')
+        current_credentials = DatabaseCredentials(username='admin', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
+        pending_credentials = DatabaseCredentials(username='admin2', password='admin2', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
+        previous_credentials = DatabaseCredentials(username='adminPrev', password='adminPrev', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         token = str(uuid.uuid4())
         credential_name = str(uuid.uuid4())
 
