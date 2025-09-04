@@ -23,8 +23,10 @@ We implemented this logic again, because current implementations
    1. Clone the user in the database and grant the necessary permissions. We suggest to add a `-clone` suffix to the username.
    2. Create a secret in AWS Secrets Manager with the following key-value pairs (for every user and its clone):
       - `rotation_type`: "AWS RDS"
-      - `rotation_usernames`: Optional. The list of usernames that a part of the rotation, e.g. `["app_user", "app_user-clone"]`. If not provided, `username` is used only.
-      - `proxy_secret_ids`: Optional. The list of ARNs of the secrets that are attached to the RDS Proxy, e.g. `["arn:aws:secretsmanager:region:account-id:secret:secret-name"]`. If not provided, the proxy credentials are not adjusted.
+      - `rotation_usernames`: Optional. The list of usernames that a part of the rotation, e.g. `["app_user", "app_user-clone"]`.
+         If not provided, `username` is used only.
+      - `proxy_secret_ids`: Optional. The list of ARNs of the secrets that are attached to the RDS Proxy, e.g.
+        `["arn:aws:secretsmanager:region:account-id:secret:secret-name"]`. If not provided, the proxy credentials are not adjusted.
       - `database_host`: The hostname of the database
       - `database_port`: The port of the database
       - `database_name`: The name of the database
