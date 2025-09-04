@@ -1,4 +1,5 @@
 ---
+name: Python build
 
 #
 # Global variables from project settings:
@@ -6,62 +7,24 @@
 #   PYTHON_VERSIONS: The Python versions to test. Usually a list of newer versions we support.
 #
 
-name: Python build
-
 # yamllint disable-line rule:truthy
-on:
-  pull_request:
+on: pull_request
+# yamllint enable rule:comments
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Set up Python ${{ vars.PYTHON_VERSION }}
-        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
-        with:
-          python-version: ${{ vars.PYTHON_VERSION }}
-          cache: 'pip'
-          cache-dependency-path: setup.cfg
-
-      - name: Install dependencies
-        run: |
-          python -m pip install -e "."
-
-      - uses: astral-sh/ruff-action@e6390afda04da2e9ef69fe1e2ae0264164550c21 # v3.0.1
-        name: Lint on ${{ vars.PYTHON_VERSION }}
-        with:
-          args: "check"
-          # renovate: datasource=github-releases depName=astral-sh/ruff
-          version: "0.8.6"
-
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ${{ fromJSON(vars.PYTHON_VERSIONS) }}
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-          cache-dependency-path: setup.cfg
-
-      - name: Install dependencies
-        run: |
-          python -m pip install -e ".[test]"
-
-      - name: Run docker-compose
-        uses: hoverkraft-tech/compose-action@v2.0.1
-        with:
-          compose-file: "./tests/docker-compose.yml"
-
-      - name: Test on ${{ matrix.python-version }}
-        run: |
-          pytest -v --doctest-modules --junitxml=junit/test-results.xml --cov-report=xml --cov-report=html
+  default:
+    # yamllint disable-line rule:line-length
+    uses: Hapag-Lloyd/Workflow-Templates/.github/workflows/python_python_callable.yml@91972445da9e92825c8c983c38c3b5ef9635dd68 # 1.19.1
+    secrets: inherit
+    with:
+      # type: string
+      # required: true
+      # description: The minimum Python version to support
+      python-version: ${{ vars.PYTHON_VERSION }}
+      # type: string
+      # required: true
+      # description: The Python versions to test. Usually a list of newer versions we support.
+      python-versions: ${{ vars.PYTHON_VERSIONS }}
