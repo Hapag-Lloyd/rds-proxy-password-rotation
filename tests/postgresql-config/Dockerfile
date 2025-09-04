@@ -1,4 +1,4 @@
-FROM postgres:16-alpine
+FROM postgres:17-alpine
 
 # keep the Renovate comments to update the image automatically
 # renovate: datasource=repology depName=openssl
