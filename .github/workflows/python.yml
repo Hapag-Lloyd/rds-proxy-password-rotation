@@ -17,7 +17,7 @@ permissions:
 jobs:
   default:
     # yamllint disable-line rule:line-length
-    uses: Hapag-Lloyd/Workflow-Templates/.github/workflows/python_python_callable.yml@91972445da9e92825c8c983c38c3b5ef9635dd68 # 1.19.1
+    uses: Hapag-Lloyd/Workflow-Templates/.github/workflows/python_python_callable.yml@7a25f9892f38ee19a3abff5f7e4696b54166d8e5 # 1.20.6
     secrets: inherit
     with:
       # type: string
