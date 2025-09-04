@@ -4,6 +4,7 @@ doctest
 hoverkraft
 junitxml
 kayma
+mktemp
 pycache
 pypa
 pypi
