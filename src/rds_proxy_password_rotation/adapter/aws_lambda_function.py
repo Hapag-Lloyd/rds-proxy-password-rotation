@@ -16,12 +16,10 @@ def lambda_handler(event: AwsSecretManagerRotationEvent, context: LambdaContext)
 
     if container is None:
         container = Container()
-        container.config.api_key.from_env("API_KEY", required=True)
-        container.config.timeout.from_env("TIMEOUT", as_=int, default=5)
         container.wire(modules=[__name__])
 
     __call_application(event)
 
 @inject
 def __call_application(event: AwsSecretManagerRotationEvent, application: PasswordRotationApplication = Provide[Container.password_rotation_application]) -> None:
-    application.rotate_secret(event.step.to_rotation_step(), event.secret_id)
+    application.rotate_secret(event.step.to_rotation_step(), event.secret_id, event.client_request_token)
