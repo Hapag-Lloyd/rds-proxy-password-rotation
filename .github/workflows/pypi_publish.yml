@@ -1,0 +1,29 @@
+---
+name: Publish Python 🐍 distribution 📦 to PyPI
+
+#
+# Global variables from project settings:
+#   PYPI_URL: The URL of the PyPI project, e.g. https://pypi.org/p/my-fancy-package
+#   PYTHON_VERSION: The minimum Python version to support.
+#
+
+# yamllint disable-line rule:truthy
+on:
+  release:
+    types: [published]
+# yamllint enable rule:comments
+
+jobs:
+  default:
+    # yamllint disable-line rule:line-length
+    uses: Hapag-Lloyd/Workflow-Templates/.github/workflows/python_pypi_publish_callable.yml@91972445da9e92825c8c983c38c3b5ef9635dd68 # 1.19.1
+    secrets: inherit
+    with:
+      # type: string
+      # required: true
+      # description: The URL of the PyPI project, e.g. https://pypi.org/p/my-fancy-package
+      pypi-url: ${{ vars.PYPI_URL }}
+      # type: string
+      # required: true
+      # description: The minimum Python version to support
+      python-version: ${{ vars.PYTHON_VERSION }}

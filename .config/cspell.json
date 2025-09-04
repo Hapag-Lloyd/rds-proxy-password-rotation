@@ -1,9 +1,16 @@
 {
+  "import": ["@cspell/dict-cspell-bundle/cspell-ext.json"],
   "version": "0.2",
   "language": "en",
-    "ignorePaths": [
-        ".idea"
-    ],
+  "ignorePaths": [
+    ".git/",
+    ".idea/",
+    ".config/dictionaries/",
+    "**/.infracost/**",
+    "**/.terraform/**",
+    "**/*.tfstate.*",
+    "**/node_modules/**"
+  ],
   "dictionaries": [
     "workflow",
     "maven",
