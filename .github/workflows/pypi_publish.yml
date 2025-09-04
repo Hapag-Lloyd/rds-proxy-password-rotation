@@ -32,8 +32,8 @@ jobs:
           cache: "pip"
           cache-dependency-path: setup.cfg
       - name: Set version number
-        run: >-
-          version=${GITHUB_REF#refs/tags\/}
+        run: |
+          version="${GITHUB_REF#refs/tags\/}"
           echo "Setting version in setup.cfg to ${version}"
           sed -i "s/^version = .*/version = ${version}/" setup.cfg
       - name: Install pypa/build
