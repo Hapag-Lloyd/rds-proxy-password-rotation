@@ -49,7 +49,7 @@ We implemented this logic again, because current implementations
    docker pull ghcr.io/Hapag-Lloyd/rds-proxy-password-rotation:edge
    ```
 
-   :attention: The `edge` tag is used for the latest build. You SHOULD use a specific version tag in production.
+   :warning: The `edge` tag is used for the latest build. You SHOULD use a specific version tag in production.
 
 ## Architecture
 
