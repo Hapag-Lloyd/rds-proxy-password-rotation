@@ -1,9 +1,6 @@
-dists
-doctest
-hoverkraft
-junitxml
+codeowner
+kayma
 pycache
-pypa
 pypi
 pytest
 setuptools
