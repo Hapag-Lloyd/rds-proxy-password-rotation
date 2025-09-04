@@ -37,10 +37,19 @@ We implemented this logic again, because current implementations
       This credential will be used by the application to connect to the proxy. You may add additional key-value pairs as needed.
 
 3. If you are using RDS Proxy:
+
    1. Create a secret in AWS Secrets Manager with the following key-value pairs:
       - `username`: The username for the user that the proxy will use to connect to the database
       - `password`: The password for the user that the proxy will use to connect to the database
    2. Attach the secret to the RDS Proxy.
+
+4. The docker image can be pulled from GHCR:
+
+   ```bash
+   docker pull ghcr.io/Hapag-Lloyd/rds-proxy-password-rotation:edge
+   ```
+
+   :attention: The `edge` tag is used for the latest build. You SHOULD use a specific version tag in production.
 
 ## Architecture
 
