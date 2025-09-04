@@ -1,7 +1,9 @@
+codeowner
 dists
 doctest
 hoverkraft
 junitxml
+kayma
 pycache
 pypa
 pypi
