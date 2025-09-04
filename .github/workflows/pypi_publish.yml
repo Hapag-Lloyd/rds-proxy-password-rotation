@@ -1,5 +1,4 @@
 ---
-name: Publish Python 🐍 distribution 📦 to PyPI
 
 #
 # Global variables from project settings:
@@ -7,23 +6,60 @@ name: Publish Python 🐍 distribution 📦 to PyPI
 #   PYTHON_VERSION: The minimum Python version to support.
 #
 
+#
+# This is a copy of https://github.com/Hapag-Lloyd/Workflow-Templates/blob/main/.github/workflows/python_pypi_publish_callable.yml
+# PyPi does not support reusable workflows. See https://github.com/pypa/gh-action-pypi-publish/issues/166
+#
+
+name: Publish Python 🐍 distribution 📦 to PyPI
+
 # yamllint disable-line rule:truthy
 on:
   release:
     types: [published]
-# yamllint enable rule:comments
 
 jobs:
-  default:
-    # yamllint disable-line rule:line-length
-    uses: Hapag-Lloyd/Workflow-Templates/.github/workflows/python_pypi_publish_callable.yml@91972445da9e92825c8c983c38c3b5ef9635dd68 # 1.19.1
-    secrets: inherit
-    with:
-      # type: string
-      # required: true
-      # description: The URL of the PyPI project, e.g. https://pypi.org/p/my-fancy-package
-      pypi-url: ${{ vars.PYPI_URL }}
-      # type: string
-      # required: true
-      # description: The minimum Python version to support
-      python-version: ${{ vars.PYTHON_VERSION }}
+  build:
+    name: Build distribution 📦
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ vars.PYTHON_VERSION }}
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
+        with:
+          python-version: ${{ vars.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: setup.cfg
+      - name: Install pypa/build
+        run: >-
+          python3 -m pip install build --user
+      - name: Build a binary wheel and a source tarball
+        run: python3 -m build
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish-to-pypi:
+    name: >-
+      Publish Python 🐍 distribution 📦 to PyPI
+    if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: ${{ vars.PYPI_URL }}
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: python-package-distributions
+          path: dist/
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
