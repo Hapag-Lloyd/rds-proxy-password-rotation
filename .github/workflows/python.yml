@@ -30,3 +30,13 @@ jobs:
       # description: "Name of the image. Usually it is sensible to set this to the repository name."
       # default: ""
       docker-image-name: ${{ github.event.repository.name }}
+      # type: string
+      # required: false
+      # description: "Platforms to build the docker image for"
+      # default: "linux/amd64,linux/arm64"
+      docker-platforms: "linux/amd64,linux/arm64"
+      # type: boolean
+      # required: false
+      # description: "Enable Docker image provenance"
+      # default: true
+      docker-provenance: false
