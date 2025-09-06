@@ -21,7 +21,7 @@ class TestAwsSecretsManagerService(TestCase):
     __s3_bucket_name = f'my-bucket-{uuid.uuid4()}'
     __function_name = f'rotation--{uuid.uuid4()}'
 
-    __test_path = os.path.join(os.path.dirname(__file__), '..', '..')
+    __test_path = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 
     @classmethod
     def setUpClass(cls):
