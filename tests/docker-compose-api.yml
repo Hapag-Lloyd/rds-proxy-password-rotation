@@ -1,6 +1,16 @@
 ---
 # https://qxf2.com/blog/testing-aws-lambda-locally-using-localstack-and-pytest/
 services:
+  lambda-local:
+    image: ghcr.io/hapag-lloyd/rds-proxy-password-rotation:sha-${COMMIT_SHA}
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=eu-central-1
+    depends_on:
+      - localstack
+      - postgres
+
   localstack:
     image: localstack/localstack:4.7.0
     ports:
