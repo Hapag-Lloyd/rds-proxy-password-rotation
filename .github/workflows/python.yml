@@ -14,7 +14,7 @@ on: pull_request
 jobs:
   default:
     # yamllint disable-line rule:line-length
-    uses: Hapag-Lloyd/Workflow-Templates/.github/workflows/python_python_callable.yml@ kayma/add-docker-params # 1.21.1
+    uses: Hapag-Lloyd/Workflow-Templates/.github/workflows/python_python_callable.yml@kayma/add-docker-params # 1.21.1
     secrets: inherit
     with:
       # type: string
