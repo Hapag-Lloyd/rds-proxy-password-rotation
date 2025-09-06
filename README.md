@@ -1,5 +1,7 @@
 # rds-proxy-password-rotation
 
+<!-- dummy -->
+
 :warning: **Work in progress** :warning:
 
 - add Terraform module
