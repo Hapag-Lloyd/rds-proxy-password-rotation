@@ -9,14 +9,11 @@ def execute_api_call(request: AwsSecretManagerRotationEvent) -> requests.Respons
 
     return response
 
-def test_api_post():
+def test_alive():
     # given
     # Create a sample AwsSecretManagerRotationEvent
     given_event = {
-        "SecretId": "arn:aws:secretsmanager:region:account-id:secret",
-        "ClientRequestToken": "example-token",
-        "Step": "createSecret",
-        "RotationToken": "example-rotation-token"
+        "xxx": "yyy"
     }
 
     # when
