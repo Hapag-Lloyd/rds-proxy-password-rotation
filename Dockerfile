@@ -8,4 +8,4 @@ COPY . ${LAMBDA_TASK_ROOT}/
 RUN pip install --no-cache-dir -e .
 
 # run the function by default
-CMD [ "rds_proxy_password_rotation.adapter.aws_lambda_function.lambda_handler" ]
+CMD [ "src/rds_proxy_password_rotation/adapter/aws_lambda_function.lambda_handler" ]
