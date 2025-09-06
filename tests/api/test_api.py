@@ -20,5 +20,4 @@ def test_alive():
     actual_response = execute_api_call(given_event)
 
     # then
-    print(actual_response.json())
     assert actual_response.status_code == 200
