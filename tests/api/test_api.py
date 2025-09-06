@@ -1,13 +1,27 @@
 import requests
 
+from rds_proxy_password_rotation.adapter.aws_lambda_function_model import AwsSecretManagerRotationEvent
+
+
+def execute_api_call(request: AwsSecretManagerRotationEvent) -> requests.Response:
+    url = "http://localhost:9000/2015-03-31/functions/function/invocations"
+    response = requests.post(url, json=request)
+
+    return response
+
 def test_api_post():
-    url = "https://api.example.com/resource"
-    payload = {
-        "name": "example",
-        "value": 42
+    # given
+    # Create a sample AwsSecretManagerRotationEvent
+    given_event = {
+        "SecretId": "arn:aws:secretsmanager:region:account-id:secret",
+        "ClientRequestToken": "example-token",
+        "Step": "createSecret",
+        "RotationToken": "example-rotation-token"
     }
-    response = requests.post(url, json=payload)
-    assert response.status_code == 201
-    data = response.json()
-    assert data.get("name") == "example"
-    assert data.get("value") == 42
+
+    # when
+    actual_response = execute_api_call(given_event)
+
+    # then
+    print(actual_response.json())
+    assert actual_response.status_code == 200
