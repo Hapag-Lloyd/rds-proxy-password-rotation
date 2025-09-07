@@ -1,0 +1,48 @@
+---
+# https://qxf2.com/blog/testing-aws-lambda-locally-using-localstack-and-pytest/
+services:
+  lambda-local:
+    image: ghcr.io/hapag-lloyd/rds-proxy-password-rotation:sha-${COMMIT_SHA}
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=eu-central-1
+    ports:
+      - "127.0.0.1:9000:8080"
+    depends_on:
+      - localstack
+      - postgres
+
+  localstack:
+    image: localstack/localstack:4.7.0
+    ports:
+      - "127.0.0.1:4566:4566"
+      - "127.0.0.1:4510-4559:4510-4559"
+      - "0.0.0.0:8543:443"
+    security_opt:
+      - "label=disable"
+    environment:
+      - DEBUG=${DEBUG:-0}
+      - PERSISTENCE=${PERSISTENCE:-0}
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  postgres:
+    image: localhost/postgres-ssl
+    container_name: postgres
+    command: >
+      -c ssl=on
+      -c ssl_cert_file=/certs/server.crt
+      -c ssl_key_file=/certs/server.key
+    build:
+      context: ./postgresql-config
+      dockerfile: Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgresql-config/init-sql:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: password
