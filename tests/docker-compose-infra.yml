@@ -2,7 +2,7 @@
 # https://qxf2.com/blog/testing-aws-lambda-locally-using-localstack-and-pytest/
 services:
   localstack:
-    image: localstack/localstack:4.8.0
+    image: localstack/localstack:4.8.1
     ports:
       - "127.0.0.1:4566:4566"
       - "127.0.0.1:4510-4559:4510-4559"
