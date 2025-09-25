@@ -144,7 +144,7 @@ class TestPasswordRotationApplicationInfra(TestCase):
         # given
         given_token = f'{uuid.uuid4()}'
         given_secret_name = f'secret_with_rotation_{uuid.uuid4()}'
-        given_current_value = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS, rotation_usernames=['admin1', 'admin2'])
+        given_current_value = DatabaseCredentials(username='admin1', password='admin', database_host='localhost', database_port=5432, database_name='test', rotation_type=PasswordType.AWS_RDS)
         given_application = PasswordRotationApplication(self.password_service, self.database_service, Mock(spec=Logger))
 
         TestPasswordRotationApplicationInfra.__create_secret(given_secret_name, given_current_value, given_token, None)

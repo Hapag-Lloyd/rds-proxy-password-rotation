@@ -20,12 +20,12 @@ We implemented this logic again, because current implementations
 1. Python 3.10 or later
 2. For each db user:
 
-   1. Clone the user in the database and grant the necessary permissions. We suggest to add a `-clone` suffix to the username.
-   2. Create a secret in AWS Secrets Manager with the following key-value pairs (for every user and its clone):
+   1. Make sure that the username ends with digit `1` or `2`. This is required for the rotation logic.
+   2. Clone the user in the database and grant the necessary permissions. Use the same username but replace the digit.
+      For example, if the original user is `app_user1`, create a clone `app_user2` with the same permissions.
+   3. Create a secret in AWS Secrets Manager with the following key-value pairs (for every user and its clone):
 
       - `rotation_type`: "AWS RDS"
-      - `rotation_usernames`: Optional. The list of usernames that a part of the rotation, e.g. `["app_user", "app_user-clone"]`.
-        If not provided, `username` is used only.
       - `proxy_secret_ids`: Optional. The list of ARNs of the secrets that are attached to the RDS Proxy, e.g.
         `["arn:aws:secretsmanager:region:account-id:secret:secret-name"]`. If not provided, the proxy credentials are not adjusted.
       - `database_host`: The hostname of the database

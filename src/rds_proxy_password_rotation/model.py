@@ -1,7 +1,6 @@
 from enum import Enum
-from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing_extensions import Optional
 
 
@@ -28,7 +27,6 @@ class PasswordType(Enum):
 
 class Credentials(BaseModel, extra='allow'):
     rotation_type: PasswordType
-    rotation_usernames: Optional[List[str]] = []
 
 
 class UserCredentials(Credentials):
@@ -36,18 +34,20 @@ class UserCredentials(Credentials):
     password: str
 
     def get_next_username(self) -> str:
-        if not self.rotation_usernames:
+        if self.username[-1].isdigit():
+            next_digit = 2 if self.username[-1] == '1' else 1  # only toggle between 1 and 2
+            return self.username[:-1] + str(next_digit)
+        else:
             return self.username
 
-        # e.g. user1 -> user2, user2 -> user3, user3 -> user1, ...
-        if self.username not in self.rotation_usernames:
-            self.logger.warning(f'current username {self.username} not in rotation usernames {self.rotation_usernames}. Using the first username in the list as the new one.')
-            return self.rotation_usernames[0]
+    @classmethod
+    @field_validator('username')
+    def validate_username(cls, username: str) -> str:
+        if username[-1] not in ('1', '2'):
+            raise ValueError(f"<username> must end with '1' or '2' as required by the rotation logic. Invalid: {username}")
 
-        current_index = self.rotation_usernames.index(self.username)
-        next_index = (current_index + 1) % len(self.rotation_usernames)
+        return username
 
-        return self.rotation_usernames[next_index]
 
 class DatabaseCredentials(UserCredentials):
     database_host: str
@@ -56,5 +56,5 @@ class DatabaseCredentials(UserCredentials):
 
     proxy_secret_ids: Optional[list[UserCredentials]] = None
 
-    def copy_and_replace_username(credentials: 'DatabaseCredentials', new_username: str) -> 'DatabaseCredentials':
-        return credentials.model_copy(update={'username': new_username})
+    def copy_and_replace_username(self, new_username: str) -> 'DatabaseCredentials':
+        return self.model_copy(update={'username': new_username})
