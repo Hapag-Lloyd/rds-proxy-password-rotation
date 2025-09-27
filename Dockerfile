@@ -1,5 +1,5 @@
 # based on Amazon Linux 2023
-FROM public.ecr.aws/lambda/python:3.13.2025.09.26.14
+FROM public.ecr.aws/lambda/python:3.13.2025.09.27.12
 
 ARG LAMBDA_TASK_ROOT
 WORKDIR ${LAMBDA_TASK_ROOT}
