@@ -1,5 +1,14 @@
 .config/
+.dockerignore
+.git/
 .github/
-.release*/
+.gitignore
+.idea/
+.pytest_cache/
+assets/
+build/
+LICENSE
+NUL
+README.md
 tests/
 venv/
