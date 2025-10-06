@@ -14,7 +14,7 @@ services:
       - postgres
 
   localstack:
-    image: localstack/localstack:4.9.1
+    image: localstack/localstack:4.9.2
     ports:
       - "127.0.0.1:4566:4566"
       - "127.0.0.1:4510-4559:4510-4559"
